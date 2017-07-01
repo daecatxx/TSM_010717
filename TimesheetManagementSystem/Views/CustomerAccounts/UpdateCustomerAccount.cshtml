@@ -1,0 +1,257 @@
+﻿<style>
+    .noty_body {
+        width: 400px;
+        text-align: center;
+        margin: 0px auto;
+    }
+</style>
+<div class="container">
+    <div class="col-md-offset-2 col-md-8">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="panel-title"><h3>Update Customer Account</h3></div>
+            </div>
+            <div class="panel-body">
+                <form id="dataForm" name="dataForm" role="form" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="accountNameInput">Account name</label>
+                        <div class="col-md-6">
+                            <input id="accountNameInput" name="accountNameInput" type="text" class="form-control input-lg">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="isVisibleInput">Visibility</label>
+                        <div class="col-md-3">
+                            <div class="make-switch" data-on="primary" data-off="info">
+                                <input type="checkbox" id="isVisibleInput" name="isVisibleInput" checked>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="effectiveEndDateInput">Comments</label>
+                        <div class="col-md-9">
+                            <textarea class="form-control input-lg" style="max-width:600px;" id="commentsInput" name="commentsInput"
+                                      rows="5" placeholder="Comments .... " required></textarea>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group col-md-12">
+                        <label class="control-label col-md-1"></label>
+                        <div class="col-md-10">
+                            <div class="pull-right">
+                                <input type="button" class="btn btn-danger" value="Delete" id="deleteButton" data-toggle="modal" data-target="#confirm-delete" />
+                                <input type="button" class="btn btn-primary" value="Save" id="saveButton" />
+                                <a class="btn btn-default" asp-action="ManageCustomerAccounts"
+                                   asp-controler="CustomerAccounts">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div><!-- end of div element which has the class="panel-body" -->
+        </div><!-- end of the div element which has the class="panel" -->
+    </div><!-- end of the div element which has class="col-md-offset-2 col-md-8" -->
+</div><!-- end of div element which has the class="container" -->
+<!-- End of main div element to contain all
+        the web form interface elements -->
+<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Delete customer account
+            </div>
+            <div class="modal-body">
+                If system detects that there are instructor information, account detail information linked to this account,
+                the system will reject the delete operation.<br />
+                If you do not want  this account to be used anymore, you can set the effective end date instead.<br />
+                <b>You won't be able to link instructor to this account or create account detail information which is based on this account. </b><div style="width:50%;margin:0 auto;color:red;font-weight:bold;">Continue the delete action?</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <a class="btn btn-danger btn-ok">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts{
+<link href="~/lib/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+<script src="~/lib/bootstrap-switch/dist/js/bootstrap-switch.min.js" type="text/javascript"></script>
+    <link href="~/lib/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" rel="stylesheet" />
+    <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
+    <script>
+        window.customerAccountId = getIdFromAddressBar();
+        loadOneCustomerAccountById();
+        $("[id='isVisibleInput']").bootstrapSwitch();
+
+        //I often copy and paste from other view template files
+        function getIdFromAddressBar() {
+            var urlArray = window.location.href.split('/');
+            var id = urlArray[urlArray.length - 1];
+            return id;
+        };
+
+        function loadOneCustomerAccountById() {
+            $requestTracker = jQuery.ajax({
+                type: 'GET',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                },
+                url: '/API/CustomerAccounts/GetOneCustomerAccount/' + window.customerAccountId,
+                dataType: 'json'
+            })
+            $requestTracker.done(function (data, textStatus, jqXHR) {
+                var oneAccount = data;
+                $('#accountNameInput').val(oneAccount.accountName);
+                $('#isVisibleInput').bootstrapSwitch('state', oneAccount.isVisible);
+                $('#commentsInput').val(oneAccount.comments);
+
+                //Give the button element, deleteButton some data attribute information.
+                $('#deleteButton').data('recordId', oneAccount.customerAccountId);
+                $('#deleteButton').data('recordTitle', oneAccount.accountName);
+
+
+            });//end of $requestTracker.done()
+            $requestTracker.fail(function (data, textStatus, jqXHR) {
+
+                new Noty({
+                    text: data.responseJSON.message, type: 'error',
+                    layout: 'center',
+                    closeWith: ['click', 'button']
+                }).show();//end of new Noty()
+            });
+
+        }//end of loadOneCustomerAccountById
+        function CustomerAccount(inCustomerAccountId,inAccountName, inVisibility,inComments) {
+            this.customerAccountId = inCustomerAccountId,
+                this.isVisible = inVisibility;
+            this.accountName = inAccountName;
+            this.comments = inComments;
+        }
+        $('#saveButton').on('click', function () {
+            if ($('#dataForm').valid() == true) {
+                var collectedAccountName = $("#accountNameInput").val();
+                var collectedVisibility = $('#isVisibleInput').bootstrapSwitch('state');
+                var collectedComments = $("#commentsInput").val();
+                var customerAccount = new CustomerAccount(
+                    window.customerAccountId,
+                    collectedAccountName, collectedVisibility,collectedComments);
+                $saveDataHandler = jQuery.ajax({
+                    type: 'PUT',
+                    url: '/API/CustomerAccounts/UpdateCustomerAccount/' + window.customerAccountId,
+                    dataType: 'json',
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                    },
+                    data: customerAccount,
+                    contentType: 'application/x-www-form-urlencoded',
+                })
+                $saveDataHandler.done(function (data, textStatus, jqXHR) {
+                    new Noty({
+                        theme: 'bootstrap-v3',
+                        text: data.message,
+                        layout: 'top',
+                        type: 'success',
+                        closeWith: ['click', 'button']
+                    }).show();
+                });//end of $saveDataHandler.done()
+                $saveDataHandler.fail(function (data, textStatus, jqXHR) {
+                    var infoFromServer = data.responseJSON.message;
+                    new Noty({
+                        theme: 'bootstrap-v3',
+                        text: infoFromServer, type: 'error',
+                        layout: 'top',
+                        onTemplate: function () {
+                            this.barDom.innerHTML = '<div class="noty_body">' + this.options.text + '</div>';
+                            // Important: .noty_body class is required for setText API method.
+                        }
+                    }).show();//end of new Noty()
+                });//end of $saveDataHandler.fail()
+            }//if the form is valid.
+        });//end of $('#saveButton').on('click', anonymous function)
+
+
+        //-------------------- setup client-side validation logic --------------------------------
+        //http://stackoverflow.com/questions/18754020/bootstrap-3-with-jquery-validation-plugin
+        jQuery.validator.setDefaults({
+            highlight: function (element, errorClass, validClass) {
+                if (element.type === "radio") {
+                    this.findByName(element.name).addClass(errorClass).removeClass(validClass);
+                } else {
+                    $(element).closest('.form-group').removeClass('has-success has-feedback').addClass('has-error has-feedback');
+                    $(element).closest('.form-group').find('i.fa').remove();
+                    $(element).closest('.form-group').append('<i class="fa fa-exclamation fa-lg form-control-feedback"></i>');
+                }
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                if (element.type === "radio") {
+                    this.findByName(element.name).removeClass(errorClass).addClass(validClass);
+                } else {
+                    $(element).closest('.form-group').removeClass('has-error has-feedback').addClass('has-success has-feedback');
+                    $(element).closest('.form-group').find('i.fa').remove();
+                    $(element).closest('.form-group').append('<i class="fa fa-check fa-lg form-control-feedback"></i>');
+                }
+            }
+        });
+        setupFormValidationRules();
+        function setupFormValidationRules() {
+
+            $('#dataForm').validate({
+                rules: {
+                    accountNameInput: {
+                        required: true,
+                        maxlength:100
+                    },
+                    commentsInput: {
+                        required: false
+                    }
+
+                },
+                messages: {
+                    accountNameInput: 'Please enter account name',
+                    ratePerHourInput: {
+                        required: 'Please enter rate per hour'
+                    },
+                    effectiveStartDateInput: 'Please enter start date',
+                  },
+                errorPlacement: function (error, element) {
+
+                    if (element.attr('name') == 'effectiveStartDateInput') {
+                        error.appendTo(element.parent('div').parent('div'));
+                    } else if (element.attr('name') == 'effectiveEndDateInput') {
+                        error.appendTo(element.parent('div').parent('div'));
+                    } else {
+                        error.insertAfter(element);
+                   }
+                }
+            });
+        }
+
+        $('#confirm-delete').on('click', '.btn-ok', function (e) {
+            //http://stackoverflow.com/questions/8982295/confirm-delete-modal-dialog-with-twitter-bootstrap
+            var $modalDiv = $(e.delegateTarget);
+            var id = $(this).data('recordId');
+            $deleteHandler = $.ajax({ url: '/api/CustomerAccounts/' + id, type: 'DELETE' })
+            // $.post('/api/record/' + id).then()
+            $modalDiv.addClass('loading');
+
+            $deleteHandler.done(function () {
+                $modalDiv.modal('hide').removeClass('loading');
+                window.location.replace('/CustomerAccounts/ManageCustomerAccounts');;
+            })
+            $deleteHandler.fail(function () {
+                $modalDiv.modal('hide').removeClass('loading');
+                new Noty({ text: 'System could not delete the account record.', type: 'info' }).show();
+            })
+
+        });
+        $('#confirm-delete').on('show.bs.modal', function (e) {
+            var data = $(e.relatedTarget).data();
+            $('.title', this).text(data.recordTitle);
+            $('.btn-ok', this).data('recordId', data.recordId);
+        });
+    </script>
+}

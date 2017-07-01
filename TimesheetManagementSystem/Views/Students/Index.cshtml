@@ -1,0 +1,165 @@
+﻿<div class="panel  panel-primary">
+    <div class="panel-heading">
+     <div class="panel-title">
+      Manage Students
+      <div class="btn-group pull-right">
+       <a asp-action="Create" asp-controller="Students" class="btn btn-default btn-group-lg ">Add</a>
+      
+      </div>
+      </div><!-- end of div with class="panel-title" without this one cannot arange the buttons-->
+     </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+												<th>Full Name</th>
+												<th>Admission Id</th>
+												<th>Email</th>
+												<th>Mobile Contact</th>
+												<th>Date of Birth</th>
+												<th>Course</th>
+												<th>Created By</th>
+												<th>Updated By</th>
+												<th>&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody"></tbody>
+                </table>
+
+            </div>
+        </div>
+</div>
+</div>
+@section Scripts{
+        <script>
+            $(document).ready(function () {
+                loadStudentData();
+            })
+            function loadStudentData() {
+             //Note: jQuery.ajax(..) is also often written is $.ajax(..)
+            	$loadStudentDataHandler = jQuery.ajax({
+            		url: '/API/Students',
+            		method: 'GET',
+            		dataType: 'json',
+            		cache: false,
+            	});
+             $loadStudentDataHandler.done(function (data, textStatus, jqXHR) {
+                    //This done method will
+                    //The (data) input parameter automatically captures the response from the
+                    //Get() API method
+
+                    //I usually use the following code
+                    //to inspect the returned result captured by the data input parameter
+                    //from the web server.
+                    console.log(data);
+
+                    //After inspecting the data object with the console.log
+                    //I have clear picture of the structure and used
+                    //the following variable to represent the response.d
+                    var studentList = data;
+                    var studentId = '';
+                    var fullName = '';
+                    var email = '';
+                    var mobileContact = '';
+                    var dateOfBirth = '';
+                    var createdBy = '';
+                    var updatedBy = '';
+                    var $tableElement = null;
+                    var $cellElement = null;
+                    var $rowElement = null;
+                    //-------- Find the table element -----------
+                    //I am using the $tableElement variable
+                    //to represent the found HTML element which has a matching id of studentTableBody
+                    $tableBodyElement = $('#studentTableBody');
+
+                    //I want to build rows and cells (using tr and td HTML elements) so that
+                    //I can display student name, email, mobile contact, admission id, date of birth information
+                    //within the HTML table element, studentTableBody. Recall that, I have already asked the
+                    //$tableBodyElement variable to represent (reference) the table element.
+
+                    //-------- Begin creating <tr> and <td> HTML element ------
+                    for (index = 0; index < studentList.length; index++) {
+                        //Set this student variable to reference a student object
+                        //within the studentList Array.
+                        student = studentList[index];
+                        //Copy out the student information
+                        studentId = student.studentId;
+                        fullName = student.fullName;
+                        mobileContact = student.mobileContact;
+                        dateOfBirth = moment(new Date(student.dateOfBirth)).format("DD/MM/YYYY");
+                        email = student.email;
+                        admissionId = student.admissionId;
+                        createdBy = student.createdBy;
+                        updatedBy = student.updatedBy;
+                        courseAbbreviation = student.course.courseAbbreviation;
+                        //Create new HTML <tr> element.
+                        //At the same time let the $rowElement variable to represent it.
+                        $rowElement = $('<tr></tr>');
+                        //Create the 1st cell element which display Full Name.
+                        $cellElement = $('<td></td>', { text: fullName });
+                        $rowElement.append($cellElement);
+                        //Create the 2nd cell element which display Admission Id
+                        $cellElement = $('<td></td>', { text: admissionId });
+                        $rowElement.append($cellElement);
+                        //Create the 3rd cell element which display Email
+                        $cellElement = $('<td></td>', { text: email });
+                        $rowElement.append($cellElement);
+                        //Create the 4th cell element which display Mobile Contact
+                        $cellElement = $('<td></td>', { text: mobileContact });
+                        $rowElement.append($cellElement);
+                        //Create the 5th cell element which display Date of Birth
+                        $cellElement = $('<td></td>', { text: dateOfBirth });
+                        $rowElement.append($cellElement);
+                        //Create the 6th cell element which display Course Abbreviation
+                        $cellElement = $('<td></td>', { text: courseAbbreviation });
+                        $rowElement.append($cellElement);
+                    		//Create the 7th cell element which display CreatedBy information
+                        $cellElement = $('<td></td>', { text: createdBy });
+                        $rowElement.append($cellElement);
+                    		//Create the 8th cell element which display UpdatedBy information
+                        $cellElement = $('<td></td>', { text: updatedBy });
+                        $rowElement.append($cellElement);
+                    		//Create the 9th cell element.
+                        //Also, create an additional hyperlink element which will
+                        //look like a button due to the Bootstrap class.
+                        //This <a> hyperlink element also need to have 1 important feature:
+                        //When it is clicked, it will tell the web browser to request for the UpdateStudent
+                        //and at the same time pass a QueryString data value of the respective student id.
+
+                        //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                        $hyperLinkElement = $('<a>Update Student</a>').attr('href', '/Students/Update/' + studentId);
+                        $hyperLinkElement.addClass('btn btn-primary');
+                        //The $hyperLinkElement eventually represents (references) a HTML element which is:
+                        //<a href="/Students/Update/<student id>" class="btn btn-primary" >Update Student</a>
+                        //-----------------Using jQuery() to creating the 3rd cell for the row----------------------
+                        $cellElement = $('<td></td>');
+                        //-----------------Add the previous created hyperlink element, $hyperLinkElement
+                        //                 into the newly created 9th cell.
+                        //As a result, $cellElement references an element defined by:
+                    		//<td><<a href="/Students/Update/<student id>" 
+                        //class="btn btn-primary" >Update Student</a></td>
+                        $cellElement.append($hyperLinkElement);
+
+                        //---------------Add the 6th cell into the row represented by the $rowElement
+                        $rowElement.append($cellElement);
+                        //Insert the $rowElement into the table element represented by $tableElement.
+                        $tableBodyElement.append($rowElement);
+                        //----End of creating one row to display one student by using <tr> and <td> HTML element ---
+                        //       Proceed to the next student object in the studentList Array.
+                    }//end of for loop.
+                }//end of JavaScript anonymous function
+                )//end of the done() method;
+                $loadStudentDataHandler.fail(function (data, textStatus, jqXHR) {
+      
+                	noty({
+                		text: 'Ajax call has failed due to : ' + data.statusText , type: 'error',
+                		layout: 'center',
+                		template: '<div class="noty_message"><span class="noty_text"></span>'
+                	});//end of noty()
+                })//end of $loadStudentDataHandler.fail()
+        }//end of loadStudentData();
+
+        </script>
+}

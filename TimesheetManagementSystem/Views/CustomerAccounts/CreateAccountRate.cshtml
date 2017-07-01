@@ -1,0 +1,269 @@
+﻿<style>
+    .noty_body {
+        width: 400px;
+        text-align: center;
+        margin: 0px auto;
+    }
+</style>
+<div class="container">
+    <div class="col-md-offset-2 col-md-8">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="panel-title"><h3>Create Account Rate for <span style="text-decoration:underline;" id="accountNameTextBlock"></span></h3></div>
+            </div>
+            <div class="panel-body">
+                <form id="dataForm" name="dataForm" role="form" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="ratePerHourInput">Rate per hour</label>
+                        <div class="col-md-6">
+                            <input id="ratePerHourInput" name="ratePerHourInput" type="text" class="form-control input-lg">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="effectiveStartDateInput">Effective start date</label>
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <div class="input-group input-append date" id="effectiveStartDateDatePicker">
+                                    <input type="text" class="form-control input-lg startDate  " id="effectiveStartDateInput" name="effectiveStartDateInput" />
+                                    <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="effectiveEndDateInput">Effective end date</label>
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <div class="input-group input-append date" id="effectiveEndDateDatePicker">
+                                    <input type="text" class="form-control input-lg endDate" id="effectiveEndDateInput" name="effectiveEndDateInput" />
+                                    <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-12">
+                        <label class="control-label col-md-1"></label>
+                        <div class="col-md-10">
+                            <div class="pull-right">
+                                <input type="button" class="btn btn-primary" value="Save" id="saveButton" />
+                                <a class="btn btn-default" href="/ManageAccountRates/CustomerAccounts" id="navigationBackToManageAccountRateLink">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div><!-- end of div element which has the class="panel-body" -->
+        </div><!-- end of the div element which has the class="panel" -->
+    </div><!-- end of the div element which has class="col-md-offset-2 col-md-8" -->
+</div><!-- end of div element which has the class="container" -->
+<!-- End of main div element to contain all
+        the web form interface elements -->
+
+@section Scripts{
+    <link href="~/lib/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" rel="stylesheet" />
+    <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
+    <script>
+        $('#accountNameTextBlock').text(getCustomerAccountNameFromCookie());
+        window.customerAccountId = getCustomerAccountIdFromCookie();
+        $('#navigationBackToManageAccountRateLink').attr('href', '/CustomerAccounts/ManageAccountRates/' + window.customerAccountId);
+        //The following JavaScript function is reused often
+        //to collect id value from the address bar for global scope variable
+        //such as window.accountRateId, window.companyId,window.courseId etc
+        function getIdFromAddressBar() {
+            var urlArray = window.location.href.split('/');
+            var id = urlArray[urlArray.length - 1];
+            return id;
+        };
+
+        function getCustomerAccountNameFromCookie() {
+            //Obtain the customer account name from the cookie
+            //customer_account_name
+            var customerAccount = Cookies.getJSON('customer_account');
+            return he.decode(customerAccount.accountName);//https://www.w3schools.com/jsref/jsref_decodeuricomponent.asp
+        }
+        function getCustomerAccountIdFromCookie() {
+            //Obtain the customer account name from the cookie
+            //customer_account_name
+            var customerAccount = Cookies.getJSON('customer_account');
+            console.dir(customerAccount);
+            return customerAccount.customerAccountId;//https://www.w3schools.com/jsref/jsref_decodeuricomponent.asp
+        }
+        window.customerAccountId = getIdFromAddressBar();
+        $('#effectiveStartDateDatePicker')
+            .datepicker({
+                format: 'dd/mm/yyyy'
+            })
+            .on('changeDate', function (e) {
+                // Revalidate the date field
+
+            });
+        $('#effectiveEndDateDatePicker')
+            .datepicker({
+                format: 'dd/mm/yyyy'
+            })
+            .on('changeDate', function (e) {
+                // Revalidate the date field
+            });
+
+        function AccountRate(inCustomerAccountId, inRatePerHour, inEffectiveStartDate,
+            inEffectiveEndDate) {
+            this.customerAccountId = inCustomerAccountId;
+            this.ratePerHour = inRatePerHour;
+            this.effectiveStartDate = inEffectiveStartDate;
+            this.effectiveEndDate = inEffectiveEndDate;
+        }
+        $('#saveButton').on('click', function () {
+            if ($('#dataForm').valid() == true) {
+                var collectedEffectiveStartDate = $('#effectiveStartDateInput').val();
+                var collectedEffectiveEndDate = $('#effectiveEndDateInput').val();
+                var collectedRatePerHour = $("#ratePerHourInput").val();
+                
+
+                var accountRate = new AccountRate(
+                    window.customerAccountId, collectedRatePerHour,
+                    collectedEffectiveStartDate,
+                    collectedEffectiveEndDate);
+
+                $saveDataHandler = jQuery.ajax({
+                    type: 'POST',
+                    url: '/API/CustomerAccounts/CreateAccountRate',
+                    dataType: 'json',
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                    },
+                    data: accountRate,
+                    contentType: 'application/x-www-form-urlencoded',
+                })
+                $saveDataHandler.done(function (data, textStatus, jqXHR) {
+                    new Noty({
+                        theme: 'bootstrap-v3',
+                        text: data.message,
+                        layout: 'top',
+                        type: 'success',
+                        closeWith: ['click', 'button']
+                    }).show();
+                });//end of $saveDataHandler.done()
+                $saveDataHandler.fail(function (data, textStatus, jqXHR) {
+                    var infoFromServer = data.responseJSON.message;
+                    new Noty({
+                        theme: 'bootstrap-v3',
+                        text: infoFromServer, type: 'error',
+                        layout: 'top',
+                        onTemplate: function () {
+                            this.barDom.innerHTML = '<div class="noty_body">' + this.options.text + '</div>';
+                            // Important: .noty_body class is required for setText API method.
+                        }
+                    }).show();//end of new Noty()
+                });//end of $saveDataHandler.fail()
+            }//if the form is valid.
+        });//end of $('#saveButton').on('click', anonymous function)
+
+
+        //-------------------- setup client-side validation logic --------------------------------
+        //http://stackoverflow.com/questions/18754020/bootstrap-3-with-jquery-validation-plugin
+        jQuery.validator.setDefaults({
+            highlight: function (element, errorClass, validClass) {
+                if (element.type === "radio") {
+                    this.findByName(element.name).addClass(errorClass).removeClass(validClass);
+                } else {
+                    $(element).closest('.form-group').removeClass('has-success has-feedback').addClass('has-error has-feedback');
+                    $(element).closest('.form-group').find('i.fa').remove();
+                    $(element).closest('.form-group').append('<i class="fa fa-exclamation fa-lg form-control-feedback"></i>');
+                }
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                if (element.type === "radio") {
+                    this.findByName(element.name).removeClass(errorClass).addClass(validClass);
+                } else {
+                    $(element).closest('.form-group').removeClass('has-error has-feedback').addClass('has-success has-feedback');
+                    $(element).closest('.form-group').find('i.fa').remove();
+                    $(element).closest('.form-group').append('<i class="fa fa-check fa-lg form-control-feedback"></i>');
+                }
+            }
+        });
+        setupFormValidationRules();
+        function setupFormValidationRules() {
+
+            //http://forums.asp.net/t/1671546.aspx?Singapore+mobile+phone+validation
+            jQuery.validator.addMethod('ratePerHourRule', function (rate_per_hour, element) {
+                return validateDecimal(rate_per_hour);
+            }, 'Please specify a valid value. E.g. 100 or 100.50');
+
+            jQuery.validator.addMethod("validDateFormatRule", function (value, element) {
+                //http://stackoverflow.com/questions/23895451/jquery-validate-ignore-custom-validation-rule-if-no-value
+                if (this.optional(element) || value.length == 0) {
+                    return true;
+                }
+                else {
+                    //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-using-jquery-validate
+                    return moment(value, 'DD/MM/YYYY').isValid();
+                }
+            }, 'Please enter a valid date in the format DD/MM/YYYY');
+            jQuery.validator.addMethod("endDateGreaterThanStartDateRule", function (value, element) {
+               // console.log(value);
+               // console.log($('#effectiveStartDateInput').val())
+                //http://stackoverflow.com/questions/23895451/jquery-validate-ignore-custom-validation-rule-if-no-value
+            //https://bhavinrana.wordpress.com/2011/05/14/jquery-validation-end-date-should-be-greater-than-start-date/
+                if (this.optional(element) || value.length == 0) {
+                    return true;
+                }
+                else {
+                    var collectedStartDateValue = $('#effectiveStartDateInput').val();
+                    /* after experimenting for hours, due to the dd/mm/yyyy format, the Date.parse(...) technique
+                    here is not applicable */
+                    //console.log(Date.parse(startDateValue) > Date.parse(value))
+                   // return Date.parse(value) > Date.parse(startDateValue);
+                    //Reference: http://stackoverflow.com/questions/39687278/moment-js-how-to-initialize-from-dd-mm-yyyy-format
+                    var startDate = moment(collectedStartDateValue, 'DD/MM/YYYY');
+                    var endDate = moment(value, 'DD/MM/YYYY');
+                    return endDate.isAfter(startDate, 'day')
+                }
+            }, 'End Date should be greater than Start Date.');
+            $('#dataForm').validate({
+                rules: {
+                    ratePerHourInput: {
+                        required: true,
+                        ratePerHourRule:true
+                    },
+                    effectiveStartDateInput: {
+                        required: true,
+                        validDateFormatRule: true
+
+                    },
+                    effectiveEndDateInput: {
+                        required: false,
+                        validDateFormatRule: true,
+                        endDateGreaterThanStartDateRule : true
+                    }
+
+                },
+                messages: {
+                    ratePerHourInput: {
+                        required: 'Please enter rate per hour'
+                    },
+                    effectiveStartDateInput: 'Please enter start date',
+                  },
+                errorPlacement: function (error, element) {
+
+                    if (element.attr('name') == 'effectiveStartDateInput') {
+                        error.appendTo(element.parent('div').parent('div'));
+                    } else if (element.attr('name') == 'effectiveEndDateInput') {
+                        error.appendTo(element.parent('div').parent('div'));
+                    } else {
+                        error.insertAfter(element);
+                   }
+                }
+            });
+        }
+        function validateDecimal(value) {
+            //http://stackoverflow.com/questions/30606348/check-if-a-given-value-is-a-positive-number-or-float-with-maximum-two-decimal-pl
+            var pattern = /^\d+(.\d{1,2})?$/;
+            if (pattern.test(value)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+
+    </script>
+}

@@ -1,0 +1,325 @@
+﻿<div class="col-md-offset-2 col-md-8" id="createTimeSheetDetailControlPanel">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <div class="panel-title"><h4>Create TimeSheetDetail</h4></div>
+            @*<div class="panel-title"><h3>Providing time-in time-out for <u>{{moment(timeSheetDetailData.dateOfLesson).format("DD/MM/YYYY dddd")}}</u> at {{timeSheetDetailData.customerAccountName}} from {{timeSheetDetailData.officialTimeInHHMM}} to {{timeSheetDetailData.officialTimeOutHHMM}}</h3></div>*@
+        </div>
+        <div class="panel-body">
+            <form id="dataForm" name="dataForm" role="form" class="form-horizontal">
+
+                <div class="form-group">
+                    <label class="control-label col-md-3" for="accountNameInput">Account Name</label>
+                    <div class="col-md-6">
+                        <select id="accountNameInput" class="form-control input-md selectpicker">
+                            @*<option value="0">Select Instructor</option>*@
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-lg-3" for="dateOfLessonInput">Date Of Lesson</label>
+                    <div class="col-lg-6">
+                        @*<div class="input-group"></div>*@
+                        <div class="input-group input-append date" id="dateOfLessonDatePicker">
+                            <input type="text" class="form-control input-lg" id="dateOfLessonInput" name="dateOfLessonInput" />
+                            <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-lg-3" for="officialtimeInInput">Lesson Start Time</label>
+                    <div class="col-lg-6">
+                        <div class="input-group bootstrap-timepicker timepicker">
+
+                            <input type="text" class="form-control input-lg" id="officialTimeInInput" name="officialTimeInInput" />
+                            <span class="input-group-addon add-on"><span class="glyphicon glyphicon-time"></span></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-lg-3" for="officialtimeOutInput">Lesson End Time</label>
+                    <div class="col-lg-6">
+                        <div class="input-group bootstrap-timepicker timepicker">
+
+                            <input type="text" class="form-control input-lg startDate" id="officialTimeOutInput" name="officialTimeOutInput" />
+                            <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
+                        </div>
+                    </div>
+                </div>
+                @* Session synopsis *@
+                <div class="form-group">
+                    <label class="control-label col-lg-3" for="sessionSynopsisNamesInput">Session Synopsis</label>
+                    <div class="col-lg-6">
+                        <div id="sessionSynopsisNamesInput">
+                            @*//<div id="sessionSynopsisNamesInput">*@
+                            @*<input type="text" class="form-control input-lg" id="sessionSynopsisNamesInput" name="sessionSynopsisNamesInput" />*@
+
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-lg-3" for="replacementInput">Replacement</label>
+                    <div class="col-lg-6">
+                        <div class="make-switch" id="replacmentInstructorSwitch" data-on="primary" data-off="info">
+                            <input type="checkbox" id="replacementInput" name="replacementInput">
+                        </div>
+                    </div>
+                </div>
+
+
+
+                @*<div class="form-group">
+                        <label class="control-label col-md-3" for="startTimeInput">Start time</label>
+                        <div class="col-md-4">
+                            <div class="input-group bootstrap-timepicker timepicker">
+                                <input id="startTimeInput" name="startTimeInput" v-model="actualTimeInHHMM" type="text" class="form-control input-lg">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                            </div>
+                        </div>
+                    </div>*@
+                @*<div class="form-group">
+                        <label class="control-label col-md-3" for="endTimeInput">End time</label>
+                        <div class="col-md-4">
+                            <div class="input-group bootstrap-timepicker timepicker">
+                                <input id="endTimeInput" name="endTimeInput" v-model="actualTimeOutHHMM" type="text" class="form-control input-lg">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                            </div>
+                        </div>
+                    </div>*@
+
+                <div class="form-group col-md-12">
+                    <label class="control-label col-md-1"></label>
+                    <div class="col-md-10">
+                        <div class="pull-right">
+                            <input type="button" class="btn btn-primary" value="Save" @@click.prevent="createTimeSheetDetail" id="saveButton" />
+                            <a id="goToManageAccountDetailLink" class="btn btn-default" asp-action="ManageTimeInTimeOutData" asp-controler="TimeInTimeOutData">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div><!-- end of div element which has the class="panel-body" -->
+    </div><!-- end of the div element which has the class="panel" -->
+</div><!-- end of the div element which has class="col-md-offset-2 col-md-8" -->
+
+@section Scripts{
+    <!-- Material Design fonts -->
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="~/lib/bootstrap-material-design/dist/css/bootstrap-material-design.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-material-design/dist/css/ripples.css" rel="stylesheet" />
+    @*<link href="~/lib/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" rel="stylesheet" />*@
+    
+    @*<link href="~/lib/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet" />
+    <script src="~/lib/bootstrap-select/dist/js/bootstrap-select.js"></script>*@
+    
+    @*<link rel="stylesheet" type="text/css" href="~/lib/bootstrap-timepicker/css/timepicker.css" />*@
+    @*<link href="~/lib/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />*@
+    @*<link href="~/lib/bootstrap-multiselect/dist/css/bootstrap-multiselect.css" rel="stylesheet" />*@
+    @*<link href="~/lib/jqwidgets/jqwidgets/styles/jqx.base.css" rel="stylesheet" />*@
+
+    @*<script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>*@
+    @*<script src="~/lib/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>*@
+    @*<script src="~/lib/bootstrap-switch/dist/js/bootstrap-switch.min.js" type="text/javascript"></script>*@
+    @*<script src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>*@
+    @*<script src="https://unpkg.com/vue/dist/vue.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script src="~/lib/bootstrap-material-design/dist/js/material.js"></script>
+        <script src="~/lib/bootstrap-material-design/dist/js/ripples.js"></script>*@
+    @*<script src="~/lib/jqwidgets/jqwidgets/jqxcore.js"></script>
+        <script src="~/lib/jqwidgets/jqwidgets/jqx-all.js"></script>*@
+
+    <script>
+        window.timeSheetId = getIdFromAddressBar();
+        window.sessionSynopsisIdArray = [];
+
+        window.accname = "";
+
+        $.material.init(); //Surprisingly, I need to place this command here so that it can work.
+
+        function getIdFromAddressBar() {
+            var urlArray = window.location.href.split('/');
+            var id = urlArray[urlArray.length - 1];
+            return id;
+        };
+
+        var vm = new Vue({
+            el: '#createTimeSheetDetailControlPanel',
+            data: {
+                //timeSheetDetailData: {
+                //    accountName: '', dateOfLesson: '', officialTimeIn: '', officialTimeOut: '', isReplacementInstructor: '', sessionSynopsisNames: '',
+                //},
+                moment: moment,
+                accountName: '',
+                dateOfLesson: '',
+                officialTimeIn: '', officialTimeOut: '',
+                isReplacementInstructor: '',
+                sessionSynopsisNames: '',
+                //officialTimeInHHMM,
+                //officialTimeOutHHMM,
+                //actualTimeInHHMM: '',
+                //actualTimeOutHHMM: ''
+            },
+            mounted() {
+
+                this.setupCustomerAccountListBox();
+                this.setupSessionSynopsisNamesListBox();
+                $('#dateOfLessonDatePicker').datepicker({ format: 'dd/mm/yyyy' }).on(
+                    'changeDate', () => {
+
+                        dateOfLesson = $('#dateOfLessonInput').val()
+                    });
+                $("#sessionSynopsisNamesInput").on('change', function (event) {
+                    var items = $("#sessionSynopsisNamesInput").jqxComboBox('getSelectedItems');
+                    var selectedItems = [];
+                    $.each(items, function (index) {
+                        selectedItems.push(this.label);
+                    });
+
+                    sessionSynopsisIdArray = selectedItems;
+
+                });
+
+
+
+            },
+
+            methods: {
+                setupCustomerAccountListBox: function () {
+                    var that = this;
+                    $requestTracker = jQuery.ajax({
+                        type: 'GET',
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                        },
+                        url: '/API/CustomerAccounts/GetCustomerAccounts',
+                        dataType: 'json',
+                        contentType: 'application/json'
+                    });
+                    $requestTracker.done(function (data) {
+                        //console.dir(data);
+                        var $accountNameInputElement = $('#accountNameInput');
+                        //.selectpicker();
+
+                        var $optionElement = '';
+
+                        for (index = 0; index < data.length; index++) {
+                            oneCustomerAccount = data[index];
+
+                            $optionElement = $('<option>')
+                                .text(oneCustomerAccount.accountName)
+                                .attr('value', oneCustomerAccount.accountName);
+                            $accountNameInputElement.append($optionElement);
+
+                            //console.dir($optionElement)
+                            console.dir($accountNameInputElement)
+                        }
+                    });
+
+
+                },
+                createTimeSheetDetail: function () {
+                    var that = this;
+                    console.log('Save button is clicked');
+                    //console.log("a "+sessionSynopsisIdArray);
+                    $saveDataHandler = jQuery.ajax({
+                        type: 'POST',
+                        url: '/API/TimeSheetDetails/CreateTimeSheetDetail',
+                        dataType: 'json',
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                        },
+                        data: /*function(mins)*/{
+                            dateOfLesson: $("#dateOfLessonInput").val(),
+
+                            officialTimeIn: $("#officialTimeInInput").val(),
+                            officialTimeOut: $("#officialTimeOutInput").val(),
+                            accountName: $("#accountNameInput").val(),
+                            isReplacementInstructor: $("#replacementInput").bootstrapSwitch('state'),
+                            sessionSynopsisNames: $("#sessionSynopsisNamesInput").val(sessionSynopsisIdArray),
+
+
+                            //timeSheetDetailId: that.$root._data.timeSheetDetailData.timeSheetDetailId
+                        },
+                        contentType: 'application/x-www-form-urlencoded',
+                    });//end of jQuery.ajax() method call
+                    $saveDataHandler.done(function (data, textStatus, jqXHR) {
+
+
+                        new Noty({
+                            text: data.message, type: 'success', layout: 'center',
+                            
+                        }).show();
+                    });//end of saveDataHandler.done(...)
+                },
+
+
+                setupSessionSynopsisNamesListBox: function () {
+
+                    var $loadSessionSynopsisNamesHandler = jQuery.ajax({
+                        contentType: 'application/json',
+                        method: 'get',
+                        url: '/api/SessionSynopses/GetSessionSynopsesForControls',
+
+                    });
+
+                    $loadSessionSynopsisNamesHandler.done(function (data, textStatus, jqXHR) {
+                        console.dir(data);
+                        var sessionSynopsisList = data;
+                        $("#sessionSynopsisNamesInput").jqxComboBox({
+                            source: sessionSynopsisList, multiSelect: true,
+                            width: 350, height: 25,
+                            displayMember: 'sessionSynopsisName',
+                            valueMember: 'sessionSynopsisId'
+                        });
+
+                        $loadSessionSynopsisNamesHandler.fail(function (data, textStatus, jqXHR) {
+                            var errMsg = data.responseJSON.message
+                            noty({
+                                text: errMsg,
+                                type: 'error',
+                                layout: 'center',
+                                template: '<div class="noty_message"><span class="noty_text"></span>'
+
+                            }); //end of noty
+                        });
+
+                    });
+                }
+
+            }
+        });
+
+        $('#officialTimeInInput').timepicker({
+            minuteStep: 15,
+            secondStep: 59,
+            showInputs: false,
+            disableFocus: true,
+            template: 'dropdown',
+            modalBackdrop: true,
+            showSeconds: false,
+            showMeridian: true
+        });
+        $('#officialTimeOutInput').timepicker({
+            minuteStep: 15,
+            secondStep: 59,
+            showInputs: false,
+            disableFocus: true,
+            template: 'dropdown',
+            modalBackdrop: true,
+            showSeconds: false,
+            showMeridian: true
+        });
+
+        $("[id='replacementInput']").bootstrapSwitch();
+        //$('#accountNameInput').selectpicker();
+//        $('.selectpicker').selectpicker();
+
+        //$('#accountNameInput').selectpicker();
+
+    </script>
+
+
+
+
+}

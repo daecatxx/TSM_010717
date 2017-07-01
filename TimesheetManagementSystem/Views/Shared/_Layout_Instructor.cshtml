@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OSchool Timesheet</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-table/dist/bootstrap-table.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/sticky_footer.css" />
+    <link href="~/lib/noty/lib/noty.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-dialog/dist/css/bootstrap-dialog.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="~/lib/bootstrap-timepicker/css/timepicker.css" />
+    <link href="~/lib/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+    <link href="~/lib/jqwidgets/jqwidgets/styles/jqx.base.css" rel="stylesheet" />
+    @*<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="~/lib/bootstrap-material-design/dist/css/bootstrap-material-design.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-material-design/dist/css/ripples.css" rel="stylesheet" />*@
+
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="~/lib/jquery-validation/dist/additional-methods.js"></script>
+    <script src="~/lib/js-cookie/src/js.cookie.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="~/lib/bootstrap-table/dist/bootstrap-table.js"></script>
+    <script src="~/lib/noty/lib/noty.js"></script>
+    <script src="~/lib/moment/min/moment.min.js"></script>
+    <script src="~/lib/he/he.js"></script>
+
+    <script src="~/lib/bootstrap-table-contextmenu/dist/bootstrap-table-contextmenu.min.js"></script>
+    <script src="~/lib/bootstrap-dialog/dist/js/bootstrap-dialog.js"></script>
+    <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
+    <script src="~/lib/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
+    <script src="~/lib/bootstrap-switch/dist/js/bootstrap-switch.min.js" type="text/javascript"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="~/lib/bootstrap-material-design/dist/js/material.js"></script>
+    <script src="~/lib/bootstrap-material-design/dist/js/ripples.js"></script>
+    <script src="~/lib/jqwidgets/jqwidgets/jqxcore.js"></script>
+    <script src="~/lib/jqwidgets/jqwidgets/jqx-all.js"></script>
+
+
+</head>
+<body>
+    <div id="wrap">
+        @if (User.Identity.IsAuthenticated)
+        {
+    <!-- Wrap all page content here -->
+
+
+        <!-- Fixed navbar -->
+            <div class="navbar navbar-default navbar-fixed-top">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="#">Time Sheet Management</a>
+                    </div>
+                    <div class="collapse navbar-collapse">
+                        <ul class="nav navbar-nav">
+
+                            <li class="dropdown ">
+                                <a href="#" id="drop2" data-toggle="dropdown" class="dropdown-toggle" role="button">
+                                    Timesheet <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
+                                    <li><a asp-controller="TimeInTimeOutData" asp-action="ViewTimeSheetDetailData">View Timesheet</a></li>
+                                    <li><a asp-controller="TimeInTimeOutData" asp-action="UpdateTimeSheetDetailData">Update Timesheet</a></li>
+                                    <li><a asp-controller="TimeSheetDetails" asp-action="Create">Create TimeSheet for replacement</a></li>
+                                    <li class="divider"></li>
+                                    <li><a asp-controller="TimeInTimeOutData" asp-action="ManageTimeInTimeOutData">Manage Time Sheets</a></li>
+                                    <li><a asp-controller="TimeInTimeOutData" asp-action="GenerateTimeSheetDetailData">Generate Time Sheets</a></li>
+                                </ul>
+                            </li>
+
+                        </ul>
+                        @await Html.PartialAsync("_LoginPartial")
+                    </div><!--/.nav-collapse -->
+                </div>
+            </div>}
+        else
+        {
+            <div class="navbar navbar-inverse navbar-fixed-top">
+                <div class="container container-fluid">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a asp-controller="Home" asp-action="Index" class="navbar-brand">Time Sheet Manager</a>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav"></ul>
+                        @await Html.PartialAsync("_LoginPartial")
+                    </div>
+                </div>
+            </div>
+
+        }
+
+        <div class="container container-fluid">
+            @RenderBody()
+        </div>
+        @RenderSection("scripts", required: false)
+    </div><!-- end of div with id="wrap"-->
+    <footer class="footer">
+        <div class="container">
+            <p class="text-muted">Copyright of OSchool</p>
+        </div>
+    </footer>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+general:
+  branches:
+    ignore:
+      - gh-pages
+machine:
+  node:
+    version: 5
+test:
+  override:
+    - npm run build
+    - git checkout dist
+    - npm test
+deployment:
+  doc:
+    branch: master
+    commands:
+      - ./build/gh-pages.sh
+      - bash <(curl -s https://codecov.io/bash)
+  codecov:
+    branch: develop
+    commands:
+      - bash <(curl -s https://codecov.io/bash)

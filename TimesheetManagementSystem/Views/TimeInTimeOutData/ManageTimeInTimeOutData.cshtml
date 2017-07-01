@@ -1,0 +1,162 @@
+﻿
+<div id="timeSheetManagementPanel">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel  panel-primary">
+                <div class="panel-heading">
+                    <div class="panel-title"><h3>Manage Timesheet for {{timeSheetMonth}} / {{timeSheetYear}}</h3></div>
+                </div>
+            </div><!-- ending the div panel here -->
+        </div>
+    </div>
+
+    <div class="row">
+        <span style="float:right;margin-bottom:15px;">
+
+        </span>
+        <div id="no-more-tables">
+            <table id="timeSheetDetailDataTable"
+                   class="col-md-12 table-bordered table-striped table-condensed cf table-responsive ">
+                <thead class="cf">
+                    <tr>
+                        <th style="width:3%"></th>
+                        <th style="width:10%">Account</th>
+                        <th style="width:3%">Lesson Date</th>
+                        <th style="width:5%">Start Time</th>
+                        <th style="width:5%">End Time</th>
+                        <th style="width:5%">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="timeSheetDetailDataTableBody">
+                    <tr v-for="timeSheetDetail in timeSheetDetailData">
+                        <td data-title="Actions">
+                            <div class="btn-group btn-group - xs dropup">
+                                <button type="button" class="btn btn-default dropdown-toggle row-action-button" data-toggle="dropdown" aria- haspopup="true" aria-expanded="false">
+                                    <i class="material-icons">menu</i>
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <ul id="context-menu" class="dropdown-menu dropdown-menu-right" style="font-size:14pt;">
+                                    <li><a v-bind:href="updateTimeSheetDetail(timeSheetDetail.timeSheetDetailId)">Update Time In/Time Out</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                        <td data-title="Account">{{timeSheetDetail.customerAccountName}}</td>
+                        <td data-title="Lesson date">{{moment(timeSheetDetail.dateOfLesson).format("DD/MM/YYYY dddd")}}</td>
+                        <td data-title="Official time in">{{timeSheetDetail.officialTimeInHHMM}}</td>
+                        <td data-title="Official time out">{{timeSheetDetail.officialTimeOutHHMM}}</td>
+                        <td data-title="status">{{timeSheetDetail.status}}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+
+</div>
+@section scripts{
+    <!-- Material Design fonts -->
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="~/lib/bootstrap-material-design/dist/css/bootstrap-material-design.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-material-design/dist/css/ripples.css" rel="stylesheet" />
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="~/lib/bootstrap-material-design/dist/js/material.js"></script>
+    <script src="~/lib/bootstrap-material-design/dist/js/ripples.js"></script>
+    <script>
+
+
+
+
+        //Reference: http://fezvrasta.github.io/bootstrap-material-design/#getting-started
+        $.material.init(); //Surprisingly, I need to place this command here so that it can work.
+        function getCurrentMonthName() {
+            var monthNameList = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            var currentDate = new Date();
+
+            return monthNameList[currentDate.getMonth()];
+        }
+
+        $(document).ready(function () {
+
+        });
+
+        var vm = new Vue({
+            el: '#timeSheetManagementPanel',
+            data: {
+                timeSheetMonth: getCurrentMonthName(),
+                timeSheetYear: new Date().getFullYear(),
+                moment: moment,
+                timeSheetDetailData: {
+
+                    accountName: '',
+                    dateOfLesson: '',
+                    officialTimeIn: '',
+                    officialTimeOut: '',
+                    //status: '',
+
+                }
+            },
+            mounted() {
+                this.loadTimeSheetDetailData();
+            },
+            methods: {
+
+                getWeekDayName: function (inWeedDayNumber) {
+                    var dayNameList = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+                        'Saturday'];
+                    console.log(dayNameList[inWeedDayNumber]);
+                    return dayNameList[inWeedDayNumber];
+                },
+                getTimeFromMins: function (mins) {
+                    //https://stackoverflow.com/questions/36035598/how-to-convert-minutes-to-hours-using-moment-js
+                    // Do not include the first validation check if you want, for example,
+                    // getTimeFromMins(1530) to equal getTimeFromMins(90) (i.e. mins rollover)
+                    if (mins >= 24 * 60 || mins < 0) {
+                        throw new RangeError("Valid input should be greater than or equal to 0 and less than 1440.");
+                    }
+                    var h = mins / 60 | 0,
+                        m = mins % 60 | 0;
+                    return moment.utc().hours(h).minutes(m).format("hh:mm A");
+                },
+                updateTimeSheetDetail: function (id) {
+                    return '/TimeInTimeOutData/UpdateTimeSheetDetail/' + id;
+                },
+                loadTimeSheetDetailData: function () {
+                    var that = this;
+                    $requestTracker = jQuery.ajax({
+                        type: 'GET',
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                        },
+                        url: '/API/TimeInTimeOutData/GetTimeSheetAndTimeSheetDetails',
+                        dataType: 'json',
+                        contentType: 'application/x-www-form-urlencoded'
+                    });
+                    $requestTracker.done(function (data) {
+                        console.dir(data);
+                        that.$root._data.timeSheetDetailData = data.timeSheetDetails;
+
+                    });
+
+                },
+            }
+        });
+
+
+
+             //   $('#timeSheetDetailDataTable td:nth-child(1)').hide();//Hiding first column which display record id numbers
+           //     $('#timeSheetDetailDataTable th:nth-child(1)').hide();//Hiding first column which display record id numbers
+
+
+
+
+
+
+    </script>
+}
+
+

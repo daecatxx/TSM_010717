@@ -1,0 +1,516 @@
+﻿<style>
+    #checkCurrectAccountDetailButton {
+        margin-left: 10px;
+    }
+
+    tr.new-row {
+        background-color: #ffd800;
+    }
+</style>
+<div class="container">
+    <div class="col-md-offset-2 col-md-8">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="panel-title"><h3>Update Account Detail for <u><span id="accountNameTextBlock"></span></u></h3></div>
+            </div>
+            <div class="panel-body">
+                <form id="dataForm" name="dataForm" role="form" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="dayOfWeekNumberInput">Week day name</label>
+                        <div class="col-md-9">
+                            <select id="dayOfWeekNumberInput" name="dayOfWeekNumberInput" class="form-control input-lg">
+                                <option value="0">--Select week day name--</option>
+                                <option value="1">Sunday</option>
+                                <option value="2">Monday</option>
+                                <option value="3">Tuesday</option>
+                                <option value="4">Wednesday</option>
+                                <option value="5">Thursday</option>
+                                <option value="6">Friday</option>
+                                <option value="7">Saturday</option>
+                            </select><br />
+                            <input type="button" class="btn btn-default" id="checkCurrectAccountDetailButton" value="Check current account details" />
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="startTimeInput">Lesson start time</label>
+                        <div class="col-md-4">
+                            <div class="input-group bootstrap-timepicker timepicker">
+                                <input id="startTimeInput" name="startTimeInput" type="text" class="form-control input-lg">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="endTimeInput">Lesson end time</label>
+                        <div class="col-md-4">
+                            <div class="input-group bootstrap-timepicker timepicker">
+                                <input id="endTimeInput" name="endTimeInput" type="text" class="form-control input-lg">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="effectiveStartDateInput">Effective start date</label>
+                        <div class="col-md-7">
+                            <div class="input-group bootstrap-timepicker timepicker">
+                                <div class="input-group input-append date" id="effectiveStartDateDatePicker">
+                                    <input type="text" class="form-control input-lg" id="effectiveStartDateInput" name="effectiveStartDateInput" />
+                                    <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="effectiveEndDateInput">Effective end date</label>
+                        <div class="col-md-7">
+                            <div class="input-group bootstrap-timepicker timepicker">
+                                <div class="input-group input-append date" id="effectiveEndDateDatePicker">
+                                    <input type="text" class="form-control input-lg" id="effectiveEndDateInput" name="effectiveEndDateInput" />
+                                    <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="isVisibleInput">Is visible</label>
+                        <div class="col-md-3">
+                            <div class="make-switch" data-on="primary" data-off="info">
+                                <input type="checkbox" id="isVisibleInput" name="isVisibleInput" checked>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-12">
+                        <label class="control-label col-md-1"></label>
+                        <div class="col-md-10">
+                            <div class="pull-right">
+
+                                <input type="button" class="btn btn-primary" value="Save" id="saveButton" />
+                                <a id="goToManageAccountDetailLink" class="btn btn-default" asp-action="ManageAccountDetailsForOneCustomerAccount" asp-controler="AccountDetails">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div><!-- end of div element which has the class="panel-body" -->
+        </div><!-- end of the div element which has the class="panel" -->
+    </div><!-- end of the div element which has class="col-md-offset-2 col-md-8" -->
+</div><!-- end of div element which has the class="container" -->
+<!-- End of main div element to contain all
+        the web form interface elements -->
+
+<div id="accountDetailsContentBlock">
+    <div id="no-more-tables">
+        <table id="accountDetailTable"
+               class="col-md-offset-2 col-md-8 table-bordered table-striped table-condensed cf table-responsive ">
+            <thead class="cf">
+                <tr>
+                    <th style="width:5%">Day</th>
+                    <th style="width:7%">Start Time</th>
+                    <th style="width:7%">End Time</th>
+                    <th style="width:10%">Effective Start Date</th>
+                    <th style="width:10%">Effective End Date</th>
+                    <th style="width:5%">Visible</th>
+                </tr>
+            </thead>
+            <tbody id="accountDetailTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="conflictContentBlock" style="display:none;">
+    <div id="no-more-tables">
+        <table id="accountDetailConflictTable"
+               class="col-md-8 table-bordered table-striped table-condensed cf table-responsive ">
+            <thead class="cf">
+                <tr>
+                    <th style="width:5%">Day</th>
+                    <th style="width:7%">Start Time</th>
+                    <th style="width:7%">End Time</th>
+                    <th style="width:10%">Effective Start Date</th>
+                    <th style="width:10%">Effective End Date</th>
+                    <th style="width:5%">Visible</th>
+                </tr>
+            </thead>
+            <tbody id="accountDetailConflictTableBody"></tbody>
+        </table>
+    </div>
+</div>
+@section Scripts{
+    <link href="~/lib/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="~/lib/bootstrap-timepicker/css/timepicker.css" />
+    <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
+    <script src="~/lib/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
+    <link href="~/lib/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+    <script src="~/lib/bootstrap-switch/dist/js/bootstrap-switch.min.js" type="text/javascript"></script>
+    <script>
+        window.accountDetailId = getIdFromAddressBar();
+        $('#accountNameTextBlock').text(getCustomerAccountNameFromCookie());
+
+        //The following JavaScript function is reused often
+        //to collect id value from the address bar for global scope variable
+        //such as window.studentId, window.companyId,window.courseId etc
+        function getIdFromAddressBar() {
+            var urlArray = window.location.href.split('/');
+            var id = urlArray[urlArray.length - 1];
+            return id;
+        };
+        loadOneAccountDetail();
+        function getCustomerAccountNameFromCookie() {
+            //Obtain the customer account name from the cookie
+            //customer_account_name
+            var cookieValue = Cookies.getJSON('customer_account');
+            console.dir(cookieValue);
+            return he.decode(cookieValue.accountName);//https://www.w3schools.com/jsref/jsref_decodeuricomponent.asp
+        }
+
+        $('#checkCurrectAccountDetailButton').on('click', function () {
+            new Noty({
+                theme:'bootstrap-v4',
+                text: $('#accountDetailsContentBlock').html(),
+                layout: 'top',
+                type: 'info',
+                closeWith: ['click', 'button']
+            }).show();//end of Noty()
+        });
+        //Initialize the bootstrap switch interface
+        $("[id='isVisibleInput']").bootstrapSwitch();
+        //Initialize the time picker interface on the
+        $('#startTimeInput').timepicker();
+        $('#endTimeInput').timepicker();
+        $('#effectiveStartDateDatePicker')
+            .datepicker({
+            format: 'dd/mm/yyyy'
+        })
+        .on('changeDate', function(e) {
+            // Revalidate the date field
+
+            });
+        $('#effectiveEndDateDatePicker')
+            .datepicker({
+                format: 'dd/mm/yyyy'
+            })
+            .on('changeDate', function (e) {
+                // Revalidate the date field
+
+            });
+        function dayOfWeekAsString(dayIndex) {
+            return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayIndex];
+        };
+
+        function loadOneAccountDetail() {
+            $loadOneAccountDetailDataHandler = jQuery.ajax({
+                url: '/API/AccountDetails/GetOneAccountDetailByAccountDetailId/' + window.accountDetailId,
+                method: 'GET',
+                dataType: 'json',
+                cache: false,
+            });
+            $loadOneAccountDetailDataHandler.done(function (data, textStatus, jqXHR) {
+                $('[id="isVisibleInput"]').bootstrapSwitch('state', data.isVisible);
+                //Initialize the time picker interface on the
+                $('#startTimeInput').val(data.startTimeInHHMM);
+                $('#endTimeInput').val( data.endTimeInHHMM );
+                if (data.inEffectiveEndDate != null) {
+                    $('#effectiveEndDateDatePicker').datepicker('update', new Date(data.effectiveEndDate));
+                }
+                $('#effectiveStartDateDatePicker').datepicker('update', new Date(data.effectiveStartDate));
+                $('#dayOfWeekNumberInput').val(data.dayOfWeekNumber);
+                window.customerAccountId = data.customerAccountId;
+                //The following 2 commands are usually found at the top inside the Create Account Detail view template file.
+                //In Update Account Detail view template file, these 2 lines need to be here. Because we need the 
+                //window.customerAccountId filled with a value first.
+                loadAccountDetailsByCustomerAccountId();
+
+                $('#goToManageAccountDetailLink').attr('href', '/AccountDetails/ManageAccountDetailsForOneCustomerAccount/' + window.customerAccountId);
+            });
+        }
+
+
+
+        function AccountDetail(inAccountDetailId, inCustomerAccountId, inDayOfWeekNumber, inEffectiveStartDate,
+            inEffectiveEndDate, inStartTime, inEndTime, inVisibility) {
+            this.accountDetailId = inAccountDetailId,
+            this.customerAccountId = inCustomerAccountId;
+            this.dayOfWeekNumber = inDayOfWeekNumber;
+            this.startTime = inStartTime;
+            this.endTime = inEndTime;
+            this.effectiveStartDate = inEffectiveStartDate;
+            this.effectiveEndDate = inEffectiveEndDate;
+            this.isVisible = inVisibility;
+        }
+        $('#saveButton').on('click', function () {
+        		var collectedStartTime = $('#startTimeInput').val();
+        		var collectedEndTime = $('#endTimeInput').val();
+                var collectedEffectiveStartDate = $('#effectiveStartDateInput').val();
+        		var collectedEffectiveEndDate = $('#effectiveEndDateInput').val();
+        		var collectedDayOfWeekNumber = $("#dayOfWeekNumberInput").val();
+                var collectedVisibility = $('#isVisibleInput').bootstrapSwitch('state');
+                var accountDetail = new AccountDetail(
+                    window.accountDetailId,
+                    window.customerAccountId,
+                    collectedDayOfWeekNumber, collectedEffectiveStartDate,
+                    collectedEffectiveEndDate, collectedStartTime,
+                    collectedEndTime, collectedVisibility);
+
+           $saveDataHandler = jQuery.ajax({
+                type: 'PUT',
+                url: '/API/AccountDetails/UpdateOneAccountDetail',
+                dataType: 'json',
+                data: accountDetail,
+                contentType: 'application/x-www-form-urlencoded',
+            })
+            $saveDataHandler.done(function (data, textStatus, jqXHR) {
+                var conflictingRecords = data.conflictingRecords;
+                if (conflictingRecords.dataListWhichMightConflict.length != 0) {
+                    var resultInHTML = '<div style="margin:0px auto" class="text-center" >' + data.message + '<br>Warning: The data might <b>overlap</b> with ' + createTableView(conflictingRecords.dataListWhichMightConflict) + '</div>';
+
+                    new Noty({
+                        theme: 'bootstrap-v3',
+                        text: resultInHTML, type: 'success',
+                        layout: 'top',
+                    }).show();//end of new Noty()
+                } else {
+                    new Noty({ theme: 'bootstrap-v3', text: data.message, layout: 'center', type: 'success' }).show();
+                }
+                //-------- Find the table element -----------
+                //I am using the $tableElement variable
+                //to represent the found HTML element which has a matching id of accountDetailTableBody
+                $tableBodyElement = $('#accountDetailTableBody');
+                accountDetail = data.currentRecord;
+                //Copy out the accout detail information
+                accountDetailId = accountDetail.accountDetailId;
+                weekDayIndex = accountDetail.dayOfWeekNumber;
+                startTimeInHHMM = accountDetail.startTimeInHHMM;
+                endTimeInHHMM = accountDetail.endTimeInHHMM;
+                effectiveStartDate = moment(new Date(accountDetail.effectiveStartDate)).format("DD/MM/YYYY");
+                effectiveEndDate = (accountDetail.effectiveEndDate != null) ?
+                    moment(new Date(accountDetail.effectiveEndDate)).format("DD/MM/YYYY")
+                    : 'NA';
+                isVisible = accountDetail.isVisible;
+
+                if (window.$firstRowElement.is(":visible") == true) {
+                    window.$firstRowElement.fadeOut(5000);
+                }
+
+                $rowElement = $('#data-account-detail-id-' + accountDetail.accountDetailId);
+                $rowElement.empty();
+
+
+                //Create the cell element which display week day name
+                $cellElement = $('<td></td>', { text: dayOfWeekAsString(weekDayIndex - 1) });
+
+                $cellElement.attr('data-title', 'Day');
+                $rowElement.append($cellElement);
+                //Create the cell element which display start time
+                $cellElement = $('<td></td>', { text: startTimeInHHMM });
+                $cellElement.attr('data-title', 'Start time');
+                $rowElement.append($cellElement);
+                //Create the cell element which display end time
+                $cellElement = $('<td></td>', { text: endTimeInHHMM });
+                $cellElement.attr('data-title', 'End time');
+                $rowElement.append($cellElement);
+                //Create the cell element which display effective start date
+                $cellElement = $('<td></td>', { text: effectiveStartDate });
+                $cellElement.attr('data-title', 'Effective start date');
+                $rowElement.append($cellElement);
+                //Create the cell element which display effective end date
+                $cellElement = $('<td></td>', { text: effectiveEndDate });
+                $cellElement.attr('data-title', 'Effective end date');
+                $rowElement.append($cellElement);
+                //Create the cell element which display visibility status indicator
+                $cellElement = $('<td></td>');
+                $spanElement = $('<span></span>');
+                $spanElement.addClass(isVisible ? 'glyphicon glyphicon-ok' : 'glyphicon glyphicon-remove');
+                $cellElement.append($spanElement);
+                $cellElement.attr('data-title', 'Visibility');
+                $rowElement.append($cellElement);
+                $rowElement.addClass('new-row');
+            });//end of $saveDataHandler.done()
+            $saveDataHandler.fail(function (data, textStatus, jqXHR) {
+                var infoFromServer = data.responseJSON.message;
+
+
+                new Noty({
+                    theme: 'bootstrap-v3',
+                    text: infoFromServer, type: 'error',
+                    layout: 'center'
+                }).show();//end of new Noty()
+            });//end of $saveDataHandler.fail()
+        });//end of $('#saveButton').on('click', anonymous function)
+        window.$firstRowElement = $('<tr><td colspan="6" class="text-primary" style="text-align:center"><b><i>There is no account detail data for this customer account record at the moment.<br/>Instructors will not be able to create timesheet data without account detail information.</i></b></td></tr>');
+        function loadAccountDetailsByCustomerAccountId() {
+            //Note: jQuery.ajax(..) is also often written is $.ajax(..)
+            $loadAccountDetailDataHandler = jQuery.ajax({
+                url: '/API/AccountDetails/GetCurrentAccountDetailsByCustomerAccountId/' + window.customerAccountId,
+                method: 'GET',
+                dataType: 'json',
+                cache: false,
+            });
+            $loadAccountDetailDataHandler.done(function (data, textStatus, jqXHR) {
+                var accountDetailList = data;
+                var accountDetail;
+                var accountDetailId = '';
+                var weekDayName = '';
+                var startTimeInHHMM = '';
+                var endTimeInHHMM = '';
+                var startTimeInMinutes = 0;
+                var endTimeInMinutes = 0;
+                var isVisible = '';
+                var effectiveStartDate = '';
+                var effectiveEndDate = '';
+
+                var $tableElement = null;
+                var $cellElement = null;
+                var $rowElement = null;
+                //-------- Find the table element -----------
+                //I am using the $tableElement variable
+                //to represent the found HTML element which has a matching id of accountDetailTableBody
+                $tableBodyElement = $('#accountDetailTableBody');
+
+                //I want to build rows and cells (using tr and td HTML elements) so that
+                //I can display week day name, effective start date / end date,  start time, end time etc
+                //within the HTML table element, accountDetailTableBody. Recall that, I have already asked the
+                //$tableBodyElement variable to represent (reference) the table element.
+
+                if (accountDetailList.length == 0) {
+                    $tableBodyElement.append(window.$firstRowElement);
+                }
+                //-------- Begin creating <tr> and <td> HTML element ------
+                for (index = 0; index < accountDetailList.length; index++) {
+
+                    accountDetail = accountDetailList[index];
+                    //Copy out the accout detail information
+                    accountDetailId = accountDetail.accountDetailId;
+                    weekDayIndex = accountDetail.dayOfWeekNumber;
+                    startTimeInHHMM = accountDetail.startTimeInHHMM;
+                    endTimeInHHMM = accountDetail.endTimeInHHMM;
+                    effectiveStartDate = moment(new Date(accountDetail.effectiveStartDate)).format("DD/MM/YYYY");
+                    effectiveEndDate = (accountDetail.effectiveEndDate != null) ?
+                        moment(new Date(accountDetail.effectiveEndDate)).format("DD/MM/YYYY")
+                        : 'NA';
+                    isVisible = accountDetail.isVisible;
+
+                    $rowElement = $('<tr></tr>');
+                    $rowElement.attr('id', 'data-account-detail-id-' + accountDetail.accountDetailId);
+                    //Create the cell element which display week day name
+                    $cellElement = $('<td></td>', { text: dayOfWeekAsString(weekDayIndex - 1) });
+                    $cellElement.attr('data-title', 'Day');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display start time
+                    $cellElement = $('<td></td>', { text: startTimeInHHMM });
+                    $cellElement.attr('data-title', 'Start time');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display end time
+                    $cellElement = $('<td></td>', { text: endTimeInHHMM });
+                    $cellElement.attr('data-title', 'End time');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display effective start date
+                    $cellElement = $('<td></td>', { text: effectiveStartDate });
+                    $cellElement.attr('data-title', 'Effective start date');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display effective end date
+                    $cellElement = $('<td></td>', { text: effectiveEndDate });
+                    $cellElement.attr('data-title', 'Effective end date');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display visibility status indicator
+                    $cellElement = $('<td></td>');
+                    $spanElement = $('<span></span>');
+                    $spanElement.addClass(isVisible ? 'glyphicon glyphicon-ok' : 'glyphicon glyphicon-remove');
+                    $cellElement.append($spanElement);
+                    $cellElement.attr('data-title', 'Visibility');
+                    $rowElement.append($cellElement);
+
+                    //Insert the $rowElement into the table element as 1st row represented by $tableBodyElement.
+                    $tableBodyElement.append($rowElement);
+                    //----End of creating one row to display one account detail by using <tr> and <td> HTML element ---
+                    // Proceed to the next accountDetail object in the accountDetailList Array.
+                }//end of for loop.
+
+            }//end of JavaScript anonymous function
+            )//end of the done() method;
+
+            $loadAccountDetailDataHandler.fail(function (data, textStatus, jqXHR) {
+                new Noty({
+                    text: 'Ajax call has failed due to : ' + data.statusText, type: 'error',
+                    layout: 'center',
+                    type: 'error',
+                    closeWith: ['click', 'button']
+                }).show();
+            })//end of $loadAccountDetailDataHandler.fail()
+        }
+
+
+
+        function createTableView(inData) {
+            $divElement = $('<div></div>');
+
+            $tableBodyElement = $('<table class="col-md-offset-2 col-md-8  table-bordered table-striped table-condensed cf table-responsive "></table>');
+            $tableBodyElement.append($('<tr><th>Day</th><th>Start time</th><th>End time</th><th>Effective start date</th><th>Effective end date</th><th>Visible</th></tr>'))
+            $divElement.append($tableBodyElement);
+            if (inData.length == 0) {
+                $tableBodyElement.append(window.$firstRowElement);
+            }
+
+            for (index = 0; index < inData.length; index++) {
+
+                accountDetail = inData[index];
+                //Copy out the accout detail information
+                accountDetailId = accountDetail.accountDetailId;
+                weekDayName = accountDetail.weekDayName;
+                startTimeInHHMM = accountDetail.startTime;
+                endTimeInHHMM = accountDetail.endTime;
+                effectiveStartDate = accountDetail.effectiveStartDate;
+                effectiveEndDate = (accountDetail.effectiveEndDate != null) ?
+                    accountDetail.effectiveEndDate : 'NA';
+                isVisible = accountDetail.isVisible;
+
+                $rowElement = $('<tr></tr>'); $rowElement.addClass('new-row');
+                //Create the cell element which display week day name
+                $cellElement = $('<td></td>', { text: weekDayName });
+
+
+                $rowElement.append($cellElement);
+                //Create the cell element which display start time
+                $cellElement = $('<td></td>', { text: startTimeInHHMM });
+
+                $rowElement.append($cellElement);
+                //Create the cell element which display end time
+                $cellElement = $('<td></td>', { text: endTimeInHHMM });
+
+                $rowElement.append($cellElement);
+                //Create the cell element which display effective start date
+                $cellElement = $('<td></td>', { text: effectiveStartDate });
+
+                $rowElement.append($cellElement);
+                //Create the cell element which display effective end date
+                $cellElement = $('<td></td>', { text: effectiveEndDate });
+
+                $rowElement.append($cellElement);
+                //Create the cell element which display visibility status indicator
+                $cellElement = $('<td></td>');
+                $spanElement = $('<span></span>');
+                $spanElement.addClass(isVisible ? 'glyphicon glyphicon-ok' : 'glyphicon glyphicon-remove');
+                $cellElement.append($spanElement);
+                $cellElement.attr('data-title', 'Visibility');
+                $rowElement.append($cellElement);
+
+                //Insert the $rowElement into the table element represented by $tableBodyElement.
+                $tableBodyElement.append($rowElement);
+            }
+            return $divElement.html();
+        }
+
+
+    </script>
+}
+
+
+
+
+
+
+
+
+

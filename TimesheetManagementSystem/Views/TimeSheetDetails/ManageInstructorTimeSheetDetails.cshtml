@@ -1,0 +1,570 @@
+﻿<style>
+  body {
+    margin-top:-40px;
+  }
+  @@media (max-width: 980px) {
+				body {
+						margin-top: 10px;
+				}
+  }
+	pre{
+	background-color:transparent;
+	font-family:Calibri;
+	font-size:12pt;
+	border:0px solid black;
+	}
+    .search-panel {
+        background-color: rgb(90.7%,92.7%,100%);
+        padding: 20px;
+        display: inline-block;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+        border-radius: 10px;
+        position: relative;
+    }
+    * {
+        font-size: 14px;
+        line-height: 1;
+    }
+    .container{
+        margin-left:10px;
+        width:100%;
+    }
+    .visible-input{
+        visibility:visible;
+    }
+    .hidden-input{
+        display:none;
+    }
+    .form-control-static{
+        text-align:left;
+    }
+
+</style>
+<form id="searchForm">
+<table style="width:500px;" class="search-panel">
+    <tr>
+		<td style="padding:3px;text-align:left;height:55px;vertical-align:top">
+			<select id="instructorIdInput"></select>
+		</td>
+        <td style="padding:3px;text-align:left;height:55px;vertical-align:top">
+            <select id="monthInput" >
+                <option value="1" >January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </td>
+        <td style="text-align:left;padding:3px;height:55px;vertical-align:top">
+            <div id="yearInput" ></div>
+        </td>
+        <td style="text-align:left;padding:3px;vertical-align:top">
+            <input type="button" id="searchButton" name="searchButton" value="Search" />
+        </td>
+    </tr>
+</table>
+<div class="row"  id="timeSheetControlPanelBox"  >
+        <div class="col-md-3">
+            <div>
+                <label class="control-label">Approve / Pending</label>
+                <div class="form-control" style="min-height:9vh;max-height:11vh">
+                    <div id="approveButton" data-toggle="modal" data-target="#confirm-approve"></div> 
+	              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+                <div class="">
+                    <label  class="control-label">Approved at </label>
+                    <div class="form-control"  style="min-height:9vh;max-height:11vh" >
+                        <div id="approveDatePlainText" class="form-control-static"></div>
+                    </div>
+                </div>
+          </div>
+</div>
+</form>
+<hr />
+<div id='instructorTimeSheetDetailMainBox'>
+    <div id="jqxgrid"></div>
+    <div style='margin-top: 20px;'>
+        <div style='float: left;'>
+            <input type="button" value="Export to Excel" id='excelExportButton' />
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="confirm-approve" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+				<div class="modal-content">
+						<div class="modal-header">
+								Set Approve/Pending status on timesheet
+						</div>
+						<div class="modal-body">
+								Continue to update the status?
+						</div>
+						<div class="modal-footer">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+								<a class="btn btn-danger btn-ok">Continue</a>
+						</div>
+				</div>
+		</div>
+</div>
+
+
+@section scripts{
+    
+<link href="~/lib/jqwidgets/jqwidgets/styles/jqx.base.css" rel="stylesheet" />
+<link href="~/lib/jqwidgets/jqwidgets/styles/jqx.energyblue.css" rel="stylesheet" />
+<script src="~/lib/jqwidgets/jqwidgets/jqxcore.js"></script>
+<script src="~/lib/jqwidgets/jqwidgets/jqx-all.js"></script>
+
+<script>
+    $(document).ready(function () {
+               //------------------------------------------------------------------------------------------------------------
+               //window.viewUIState is a global object.
+               //I have prepared this object so that the client-side logic can "remember"
+               //the user preferences on the instructor, month and year selection input which
+               //determines the search and also what timesheeddetail data the jqxGrid widget should
+               //display.
+               //------------------------------------------------------------------------------------------------------------
+				window.viewUIState = null;
+
+				if (!(window.sessionStorage.getItem("manage_timesheetdetail_ui_state") === null)) {
+						window.viewUIState = JSON.parse(window.sessionStorage.getItem('manage_timesheetdetail_ui_state'));
+				} else {
+						window.viewUIState = { instructorId: 0, month: new Date().getMonth() + 1 ,year: new Date().getFullYear() };
+				}
+				window.timeSheetData = null;
+                window.timeSheetDetailsData = null;
+				window.timeSheetDataSource = null;
+				window.timeSheetId = 0;
+                $('#timeSheetControlPanelBox').addClass('hidden-input');
+                setupInputInterface();
+
+				if (window.viewUIState.instructorId != 0) {
+						//This logic is important to prepare the grid data if the web browser was refreshed
+						obtainTimeSheetDetailsData(window.viewUIState.instructorId, window.viewUIState.month, window.viewUIState.year);
+				}
+		});
+		
+
+		function setupInputInterface() {
+
+        console.log(window.viewUIState)
+				$('#approveButton').jqxSwitchButton({ theme: 'bootstrap', width: '150', height: '30', checked: false, onLabel: 'Approve', offLabel: 'Pending', disabled:true });
+				$("#approveButton").on('change', function (event) {
+                    var checked = event.args.check;
+                    //I need this variable so that the code which works with the approve (ok and cancel button)
+                    //can see the status.
+						window.isApprovedStatus = checked;
+				});
+
+
+				$('#monthInput').jqxDropDownList({ theme:'bootstrap',selectedIndex: 0, width: 120, height: 25 });
+				$('#monthInput').jqxDropDownList('val', window.viewUIState.month);
+        //Calculate the minimum year and maximum year
+        var currentYear = new Date().getFullYear();
+        var minYear = currentYear - 3;
+        var maxYear = currentYear + 3;
+        var sourceYear = [];
+        var index = 0;
+        for (value = minYear; value <= maxYear; value++) {
+            sourceYear[index] = { text: value, value: value };
+            index++;
+        }
+
+        var source =
+            {
+                datatype: 'json',
+                datafields: [
+                    { name: 'text' } ,{ name:'value'}
+                ],
+                localdata:sourceYear
+            };
+        var dataAdapter = new $.jqx.dataAdapter(source);
+				$('#yearInput').jqxComboBox({ selectedIndex: 0, source: dataAdapter, displayMember: 'text', valueMember: 'value', width: '120', height: '25', });
+				$('#yearInput').jqxComboBox('val', window.viewUIState.year);
+				$('#searchButton').jqxButton({ theme: 'bootstrap' }).on('click', function () {
+            var year = $('#yearInput').val();
+            var month = $('#monthInput').val();
+            console.dir(year + ':' + month);
+            $('#searchForm').jqxValidator('validate');
+            window.event.returnValue = false;
+        });
+
+
+        $('#searchForm').jqxValidator({
+            hintType: 'label',
+            rules: [
+                {
+                    input: '#yearInput', message: 'A valid value is needed', action: 'keyup,blur',rule: function (data, commit) { 
+                        if (validateYear($('#yearInput').jqxComboBox('val')) == false) {
+                            return false;
+                        } else { return true;}
+                } },
+            ]
+        });
+
+				$('#searchForm').on('validationSuccess', function (event) { 
+						var monthValue = $('#monthInput').jqxDropDownList('val');
+						var yearValue = $('#yearInput').jqxComboBox('val');
+						var instructorId = $('#instructorIdInput').jqxDropDownList('val');
+						var uiState = { instructorId: instructorId, month: monthValue, year: yearValue };
+						obtainTimeSheetDetailsData(instructorId, monthValue, yearValue)
+						//Write the user selected information into sessionStorage
+						window.sessionStorage.setItem('manage_timesheetdetail_ui_state', JSON.stringify(uiState));
+						//Give the button element, approveButton some data attribute information.
+                        //If there is no data, the approve button should be disabled.
+                        //Important note: This logic is only useful when the user clicks the Search button element.
+                        //The following set of code is required else where too.
+						if (window.timeSheetData != null) {
+                            $('#approveButton').data('recordId', window.timeSheetData.timeSheetId);
+                            $('#approveButton').jqxSwitchButton({ disabled: false });
+                            $('#timeSheetControlPanelBox').removeClass('hidden-input');
+                        } else {
+                            $('#approveButton').jqxSwitchButton({ disabled: true });
+                            $('#timeSheetControlPanelBox').addClass('hidden-input');
+                        }
+        }); 
+
+
+
+
+
+				$.ajax({
+						url: '/API/UserInfo/GetAllActiveInstructorData',
+						type: 'GET',
+						contentType:'application/json'
+				}).done(function (data) {
+						for (index = 0; index < data.length; index++) {
+								$('#instructorIdInput').append($('<option>' + data[index].fullName + '</option>').attr('value', data[index].instructorId));
+						}//for
+						$('#instructorIdInput').jqxDropDownList({ selectedIndex: 0, width: 120, height: 25 });
+						$('#instructorIdInput').jqxDropDownList('val', window.viewUIState.instructorId);
+				});
+
+		}//setupInputInterface
+
+
+		function TimeSheetDetail(inTimeSheetDetailId,inActualTimeIn, inActualTimeOut, inCustomerAccountName,
+				inDateOfLesson, inOfficialTimeIn, inOfficialTimeOut, inRatePerHour, inWageRatePerHour, inSessionSynopsisNames) {
+				this.calculateWage = function () {
+						var totalHour = (this.actualTimeOut - this.actualTimeIn) / 60;
+						var result = parseFloat((totalHour * this.ratePerHour) * (this.wageRatePerHour / 100)).toFixed(2);
+						return result;
+				};
+				this.calculateTotalHour = function () {
+						var totalHour = (this.actualTimeOut - this.actualTimeIn) / 60;
+						var total = parseFloat(totalHour).toFixed(2);
+						return total;
+				};
+				this.getTimeFromMins = function (mins) {
+						//https://stackoverflow.com/questions/36035598/how-to-convert-minutes-to-hours-using-moment-js
+						// Do not include the first validation check if you want, for example,
+						// getTimeFromMins(1530) to equal getTimeFromMins(90) (i.e. mins rollover)
+						if (mins >= 24 * 60 || mins < 0) {
+								throw new RangeError("Valid input should be greater than or equal to 0 and less than 1440.");
+						}
+						var h = mins / 60 | 0,
+								m = mins % 60 | 0;
+						return moment.utc().hours(h).minutes(m).format("hh:mm A");
+				};
+				this.actualTimeIn = inActualTimeIn;
+				this.actualTimeOut = inActualTimeOut;
+				this.customerAccountName = inCustomerAccountName;
+				this.dateOfLesson = inDateOfLesson;
+				this.officialTimeIn = inOfficialTimeIn;
+				this.officialTimeOut = inOfficialTimeOut;
+				this.ratePerHour = inRatePerHour;
+				this.sessionSynopsisNames = inSessionSynopsisNames;
+				this.timeSheetDetailId = inTimeSheetDetailId;
+				this.wageRatePerHour = inWageRatePerHour;
+
+				this.actualTimeInHHMM = this.getTimeFromMins(this.actualTimeIn);
+				this.actualTimeOutHHMM = this.getTimeFromMins(this.actualTimeOut);
+				this.officialTimeInHHMM = this.getTimeFromMins(this.officialTimeIn);
+				this.officialTimeOutHHMM = this.getTimeFromMins(this.officialTimeOut);
+				this.calculatedTotalHour = this.calculateTotalHour();
+				this.calculatedWage = this.calculateWage();
+
+		}
+
+
+    //validateYear
+    function validateYear(year) {
+
+        var itIsNumber = /^\d{4}$/.test(year); // true if it is what you want
+        return itIsNumber;
+        
+    }//validateYear
+    function obtainTimeSheetDetailsData(inInstructorId,inMonth,inYear) {
+        $commTracker = $.ajax({
+						url: '/API/TimeSheetDetails/GetTimeSheetAndTimeSheetDetails/',
+						type: 'GET',
+						data: { instructorId: inInstructorId, month: inMonth, year: inYear },
+            dataType: 'json',
+            cache:false
+        });
+        $commTracker.done(function (data) {
+						window.timeSheetData = data.timeSheet;
+						window.timeSheetDetailsData = data.timeSheetDetails;
+						prepareGridInterface();
+						//The following logic is only working if there is timesheet data available.
+                        if (window.timeSheetData != null) {
+                            $('#approveButton').jqxSwitchButton({ disabled: false });
+                            $('#timeSheetControlPanelBox').removeClass('hidden-input');
+								//I need to have this logic over here to set the switch button
+								//to reflect the approve pending status of the timesheet
+								if (window.timeSheetData.approvedAt != null) {
+										$('#approveButton').jqxSwitchButton('check');
+								} else {
+										$('#approveButton').jqxSwitchButton('unCheck');
+								}
+                        } else {
+                            $('#approveButton').jqxSwitchButton({ disabled: true });
+                            $('#timeSheetControlPanelBox').addClass('hidden-input');
+                        }
+        })
+
+    }//end of obtainTimeSheetDetailsData
+
+		function prepareGridInterface() {
+				window.timeSheetDetailList = [];
+				var index = 0;
+				for (index = 0; index < window.timeSheetDetailsData.length; index++) {
+						var oneData = window.timeSheetDetailsData[index];
+						window.timeSheetDetailList.push(new TimeSheetDetail(oneData.timeSheetDetailId, oneData.actualTimeIn,
+								oneData.actualTimeOut, oneData.customerAccountName,
+								oneData.dateOfLesson, oneData.officialTimeIn, oneData.officialTimeOut,
+								oneData.ratePerHour, oneData.wageRatePerHour, oneData.sessionSynopsisNames));
+
+				}
+        var source =
+            {
+                datatype: 'json',
+                datafields: [
+                    { name: 'customerAccountName', type: 'string' },
+                    { name: 'dateOfLesson', type: 'date' },
+                    { name: 'officialTimeIn', type: 'int' },
+										{ name: 'officialTimeOut', type: 'int' },
+										{ name: 'officialTimeInHHMM', type: 'string' },
+										{ name: 'officialTimeOutHHMM', type: 'string' },
+                    { name: 'actualTimeInHHMM', type: 'string' },
+										{ name: 'actualTimeOutHHMM', type: 'string' },
+										{ name: 'actualTimeIn', type: 'int' },
+										{ name: 'actualTimeOut', type: 'int' },
+                    { name: 'sessionSynopsisNames', type: 'string' },
+										{ name: 'ratePerHour', type: 'number' },
+										{ name: 'wageRatePerHour', type: 'number' },
+										{ name: 'calculatedTotalHour', type: 'number' },
+										{ name: 'calculatedWage', type: 'number' },
+                ],
+                id: 'timeSheetDetailId',
+								localdata: window.timeSheetDetailList
+            };
+        var dataAdapter = new $.jqx.dataAdapter(source);
+/*
+        var timeCellRenderer = function (row, columnfield, value, defaulthtml, columnproperties, rowData) {
+            return '<span style="margin: 4px; float: ' + columnproperties.cellsalign + '; color: #000000;vertical-align:top">' + getTimeFromMins(value)  + '</span>';
+        }
+*/
+        var actualTimeInCellRenderer = function (row, columnfield, value, defaulthtml, columnproperties,rowData) {
+            
+            if (rowData.actualTimeIn > rowData.officialTimeIn) {
+                return '<span style="font-weight:bold;margin: 4px; float: ' + columnproperties.cellsalign + '; color:red;vertical-align:top">' + value + '</span>';
+						} else if (rowData.actualTimeIn < rowData.officialTimeIn) {
+								return '<span style="font-weight:bold;margin: 4px; float: ' + columnproperties.cellsalign + '; color: green;vertical-align:top">' + value + '</span>';
+						}
+            else {
+                return '<span style="margin: 4px; float: ' + columnproperties.cellsalign + '; color: #000000;vertical-align:top">' + value  + '</span>';
+            }
+        }
+        var actualTimeOutCellRenderer = function (row, columnfield, value, defaulthtml, columnproperties, rowData) {
+
+						if (rowData.actualTimeOut < rowData.officialTimeOut) {
+                return '<span style="font-weight:bold;margin: 4px; float: ' + columnproperties.cellsalign + '; color:red;vertical-align:top">' + value + '</span>';
+            }
+						else if (rowData.actualTimeOut > rowData.officialTimeOut) {
+								return '<span style="font-weight:bold;margin: 4px; float: ' + columnproperties.cellsalign + '; color: green;vertical-align:top">' + value + '</span>';
+						} else {
+								return '<span style="margin: 4px; float: ' + columnproperties.cellsalign + '; color: #000000;vertical-align:top">' + value + '</span>';
+
+						}
+        }
+        headerRenderer = function (defaultText, alignment, height) {
+           
+            return '<div style="float:left;margin-top:5px;margin-left:4px;width:100%;word-wrap: break-word;">' + defaultText + '</div>';
+				}
+
+				var wageCellRender = function (index, datafield, value, defaultvalue, column, rowData) {
+						console.dir(rowData);
+						return '<div style="margin: 4px;  background-color: #afd0ef;" class="jqx-left-align" >' + value + '</div>';
+
+				};
+				var totalHourOfServiceRender = function (index, datafield, value, defaultvalue, column, rowData) {
+						return '<div style="margin: 4px;  background-color: #efd0ef;" class="jqx-left-align" >' + value + '</div>';
+
+				};
+        $('#jqxgrid').jqxGrid(
+						{
+								rowdetailstemplate: {
+										rowdetails: "<div style='margin: 30px; float:left;'>Row Details</div><div style='clear:both;'></div>",
+										rowdetailsheight: 70
+								},
+								showtoolbar: true,
+								rendertoolbar: function (toolbar) {
+										var me = this;
+										toolbar.empty();
+										var $container = $("<div style='margin: 5px;'></div>");
+										var $span = $("<span style='float: left; margin-top: 5px; margin-right: 4px;'></span>");
+										if (window.timeSheetData != null) {
+												$span.text('Timesheet of ' + window.timeSheetData.instructorName 
+														+ ' for ' + window.timeSheetData.month + ' ( ' + window.timeSheetData.year + ' )');
+										}
+										toolbar.append($container);
+										$container.append($span);
+								},
+								showstatusbar: true,
+								statusbarheight: 80,
+								showaggregates: true,
+								columnsresize: true,
+                width: '95%',
+                source: dataAdapter,
+                columnsheight: 50,
+                theme:'energyblue',
+                columns: [
+                    { text: 'Account name', datafield: 'customerAccountName', width: 150, renderer: headerRenderer },
+                    { text: 'Date of lesson', datafield: 'dateOfLesson', width: 140, cellsformat: 'ddd - d/M/yyyy' ,renderer: headerRenderer },
+                    { text: 'Lesson start time', datafield: 'officialTimeInHHMM', width: 110, renderer: headerRenderer},
+                    { text: 'Actual time in', datafield: 'actualTimeInHHMM', width: 100, cellsrenderer: actualTimeInCellRenderer ,renderer: headerRenderer  },
+                    { text: 'Lesson end time', datafield: 'officialTimeOutHHMM', width: 130, renderer: headerRenderer },
+                    { text: 'Actual time out', datafield: 'actualTimeOutHHMM', width: 130,  renderer: headerRenderer,cellsrenderer: actualTimeOutCellRenderer},
+										{
+												text: 'Total time (Hr)',
+												renderer: headerRenderer,
+												datafield: 'calculatedTotalHour',
+												editable: false,
+												width: 100,
+												cellsformat: 'f2',
+											cellsrenderer: totalHourOfServiceRender,
+												aggregates: ['sum'],
+												aggregatesrenderer: function (aggregates, column, element, summaryData) {
+														var renderstring = "<pre>Total hours \n";
+														$.each(aggregates, function (key, value) {
+																var name = key == 'calculatedTotalHour';
+																renderstring += '<div style="font-size:12pt;font-weight:bold;">' + value + '</div>';
+														});
+														renderstring += "</pre>";
+														return renderstring;
+												}
+										},
+										{ text: 'Rate chargeable per hour', datafield: 'ratePerHour', width: 140, renderer: headerRenderer, cellsformat: 'd2'},
+										{ text: 'Wage Rate per hour', datafield: 'wageRatePerHour', width: 140, renderer: headerRenderer, cellsformat: 'p'},
+										{
+												text: 'Calculated wage',
+												datafield: 'calculatedWage',
+												cellsrenderer: wageCellRender,
+												renderer: headerRenderer,
+												cellsformat: 'f2',
+												editable: false,
+												width: 100,
+												cellsalign: 'left',
+												aggregates: ['sum'],
+												aggregatesrenderer: function (aggregates, column, element, summaryData) {
+														var renderstring = "<pre>Total wage \n";
+														$.each(aggregates, function (key, value) {
+																var name = key == 'calculatedWage';
+																renderstring += '<div style="font-size:12pt;font-weight:bold;">' + value + '</div>';
+														});
+														renderstring += "</pre>";
+														return renderstring;
+												}
+										},
+                    { text: 'Session Synopses', datafield: 'sessionSynopsisNames', width: 150, renderer: headerRenderer }
+                ]
+            });
+        if (window.timeSheetData != null) {
+            if (window.timeSheetData.approvedAt == null) {
+                $('#approveDatePlainText').text('N.A.');
+            } else {
+                $('#approveDatePlainText').text(moment(window.timeSheetData.approvedAt).format('DD/MM/YYYY hh:mm a'));
+            }
+        }
+    }//end of prepareGridInterface
+    $('#excelExportButton').click(function () {
+        $('#jqxgrid').jqxGrid('exportdata', 'xls', 'jqxGrid');
+    }); 
+
+
+    function getTimeFromMins(mins) {
+        //https://stackoverflow.com/questions/36035598/how-to-convert-minutes-to-hours-using-moment-js
+        // Do not include the first validation check if you want, for example,
+        // getTimeFromMins(1530) to equal getTimeFromMins(90) (i.e. mins rollover)
+        if (mins >= 24 * 60 || mins < 0) {
+            throw new RangeError("Valid input should be greater than or equal to 0 and less than 1440.");
+        }
+        var h = mins / 60 | 0,
+            m = mins % 60 | 0;
+        return moment.utc().hours(h).minutes(m).format("hh:mm A");
+    }
+   
+		$('#confirm-approve').on('click', '.btn-ok', function (e) {
+				//http://stackoverflow.com/questions/8982295/confirm-delete-modal-dialog-with-twitter-bootstrap
+				var $modalDiv = $(e.delegateTarget);
+				var id = $(this).data('recordId');
+
+
+				var isApprovedStatus = window.isApprovedStatus;
+				$modalDiv.addClass('loading');
+				$.ajax({
+						url: '/API/TimesheetDetails/ApproveTimeSheet/' + window.timeSheetData.timeSheetId,
+						type: 'PUT',
+						beforeSend: function (xhr) {
+								xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+						},
+						contentType: 'application/x-www-form-urlencoded',
+						data: { isApprovedStatus:isApprovedStatus }
+				}).done(function (data) {
+                    $modalDiv.modal('hide').removeClass('loading');
+                    window.timeSheetData = data.timeSheet;
+                    if (window.timeSheetData.approvedAt != null) {
+                        $('#approveDatePlainText').text(moment(window.timeSheetData.approvedAt).format('DD/MM/YYYY hh:mm a'));
+                    } else {
+                        $('#approveDatePlainText').text('N.A.');
+
+                    }
+						new Noty({ text: data.message, type: 'success', layout:'center' }).show();
+						}).fail(function (data) {
+						$modalDiv.modal('hide').removeClass('loading');
+						new Noty({ text: data.message, type: 'error' , layout:'center'}).show();
+						});			
+
+
+    });
+
+        $('#confirm-approve').on('click', '.btn-default', function (e) {
+            //http://stackoverflow.com/questions/8982295/confirm-delete-modal-dialog-with-twitter-bootstrap
+            var $modalDiv = $(e.delegateTarget);
+            var id = $(this).data('recordId');
+            console.log(window.isApprovedStatus);
+            window.isApprovedStatus = !(window.isApprovedStatus);
+            $('#approveButton').jqxSwitchButton({ checked: window.isApprovedStatus });
+
+        });
+		$('#confirm-approve').on('show.bs.modal', function (e) {
+				var data = $(e.relatedTarget).data();
+				$('.btn-ok', this).data('recordId', window.timeSheetData.timeSheetId);
+		});
+
+
+</script>
+
+}

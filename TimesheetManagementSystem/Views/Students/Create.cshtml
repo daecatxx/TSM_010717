@@ -1,0 +1,153 @@
+﻿<div class="container">
+		<div class="col-md-offset-2 col-md-8">
+				<div class="panel panel-primary">
+						<div class="panel-heading">
+								<div class="panel-title">Create Student Record</div>
+						</div>
+						<div class="panel-body">
+								<form id="dataForm" role="form" class="form-horizontal">
+										<div class="form-group">
+												<label class="control-label col-md-3" for="fullNameInput">Full Name</label>
+												<div class="col-md-4">
+														<input type="text" id="fullNameInput" class="form-control input-group-sm"
+																	 maxlength="30" placeholder="Full name" value="AMANDA" />
+												</div>
+										</div>
+										<div class="form-group">
+												<label class="control-label col-md-3" for="admissionIdInput">Admission Id</label>
+												<div class="col-md-7">
+														<input type="text" id="admissionIdInput" class="form-control input-group-sm"
+																	 placeholder="Admission id" value="0900221" />
+												</div>
+										</div>
+										<div class="form-group">
+												<label class="control-label col-md-3" for="emailInput">Email</label>
+												<div class="col-md-7">
+														<input type="text" id="emailInput" class="form-control input-group-sm"
+																	 placeholder="Email" value="AMANDA@EMU.COM" />
+												</div>
+										</div>
+										<div class="form-group">
+												<label class="control-label col-md-3" for="mobileContactInput">Mobile Contact</label>
+												<div class="col-md-7">
+														<input type="text" id="mobileContactInput" class="form-control input-group-sm"
+																	 placeholder="Mobile contact" value="97771235" />
+												</div>
+										</div>
+										<div class="form-group">
+												<label class="control-label col-md-3" for="dateOfBirthInput">Date of Birth</label>
+												<div class="col-md-7">
+														<input type="text" id="dateOfBirthInput" class="form-control input-group-sm"
+																	 placeholder="Date of Birth" value="21/05/1998" />
+												</div>
+										</div>
+										<div class="form-group">
+												<label class="control-label col-md-3" for="courseIdInput">Course</label>
+												<div class="col-md-9">
+														<select id="courseIdInput" class="form-control input-group-sm">
+																												<option value="0">--Select Course--</option>
+													  </select>
+												</div>
+										</div>
+										<div class="form-group col-md-12">
+												<label class="control-label col-md-1"></label>
+												<div class="col-md-10">
+														<div class="pull-right">
+																<input type="button" class="btn btn-danger" value="Delete" id="deleteButton" />
+																<input type="button" class="btn btn-primary" value="Save" id="saveButton" />
+																<a class="btn btn-default" asp-action="Index" asp-controler="Students">Cancel</a>
+														</div>
+												</div>
+										</div>
+								</form>
+						</div><!-- end of div element which has the class="panel-body" -->
+				</div><!-- end of the div element which has the class="panel" -->
+		</div><!-- end of the div element which has class="col-md-offset-2 col-md-8" -->
+</div><!-- end of div element which has the class="container" -->
+<!-- End of main div element to contain all
+		the web form interface elements -->
+@section Scripts{
+<script>
+		//Defining an object constructor (Pg. 23 Chapter 6)
+    function WebFormData(inFullName, inAdmissionId, inEmail,
+                inMobileContact,inDateOfBirth, inCourseId) {
+            this.fullName = inFullName;
+            this.admissionId = inAdmissionId;
+            this.email = inEmail;
+            this.mobileContact = inMobileContact;
+            this.dateOfBirth = inDateOfBirth;
+            this.courseId = inCourseId;
+        }
+        $('#saveButton').on('click', function () {
+        		var collectedFullName = $('#fullNameInput').val();
+        		var collectedMobileContact = $('#mobileContactInput').val();
+        		var collectedEmail = $('#emailInput').val();
+        		var collectedDateOfBirth = $('#dateOfBirthInput').val();
+        		var collectedAdmissionId = $('#admissionIdInput').val();
+        		var collectedCourseId = $("#courseIdInput").val();
+        		//Use the object constructor (WebFormData) to construct
+            //an object of information (Pg. 20 of Chapter 6)
+            var webFormData = new WebFormData(collectedFullName,	collectedAdmissionId,
+                collectedEmail, collectedMobileContact,	collectedDateOfBirth, collectedCourseId);
+        		//Convert the object into a string. The string contains the
+						    //student data in JSON structure. (Pg. 26 Chapter 6)
+            var webFormDataInString = JSON.stringify(webFormData);
+        		//Use ajax() which belongs to jQuery object to
+        		//build a HTTP POST request to send the student
+        		//data to the business logic layer. Pg. 33 Chapter 6
+            $saveStudentHandler = jQuery.ajax({
+                type: 'POST',
+                url: '/API/Students/',
+                dataType: 'json',
+                contentType: 'application/json;',
+                data: "'" + webFormDataInString + "'"
+            })
+            $saveStudentHandler.done(function (data, textStatus, jqXHR) {
+                noty({ text: data.message,layout:'center', type:'success'});
+            });//end of $saveStudentHandler.done()
+            $saveStudentHandler.fail(function (data, textStatus, jqXHR) {
+               
+            	noty({
+            		text: data.responseJSON.message, type: 'error',
+            		layout: 'center',
+            		template: '<div class="noty_message"><span class="noty_text"></span>'
+            	});//end of noty()
+            });//end of $saveStudentHandler.fail()
+        });//end of $('#saveButton').on('click', anonymous function)
+
+
+        setupCourseListBox();//Call the JavaScript function to execute
+        function setupCourseListBox() {
+            var $dataCommunicationTracker = jQuery.ajax({
+                contentType: 'application/json',
+                method: 'get',
+                url: '/API/Courses/GetCoursesForControls',
+            });
+            $dataCommunicationTracker.done(function (data, textStatus, jqXHR) {
+                var $courseIdInputElement = jQuery('#courseIdInput');
+                var $optionElement = null;
+
+                for (index = 0; index < data.length; index++) {
+                    oneCourse = data[index];
+                    $optionElement = jQuery('<option>')
+                                                    .text(oneCourse.courseAbbreviation)
+                                                    .attr('value', oneCourse.courseId);
+                    $courseIdInputElement.append($optionElement);
+                }
+            });
+            $dataCommunicationTracker.fail(function (data, textStatus, jqXHR) {
+                console.dir(data);
+                console.dir(textStatus);
+                console.dir(jqXHR);
+            });
+        }//end of setupCourseListBox() function
+
+</script>
+ }
+
+
+
+
+
+
+

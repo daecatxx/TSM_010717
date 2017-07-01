@@ -1,0 +1,536 @@
+﻿<style>
+   body{
+       margin-top:-55px;
+   }
+    .search-panel {
+        background-color: rgb(93.7%,95.7%,100%);
+        padding: 20px;
+        display: block;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+        border-radius: 10px;
+        position: relative;
+    }
+
+    * {
+        font-size: 14px;
+        line-height:1;
+    }
+		li {
+				line-height: 1.5
+		}
+
+    .form-control-static {
+        text-align: left;
+    }
+</style> 
+<div class="row pull-right">
+    <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#helpContent_1_Modal"><span class="glyphicon glyphicon-question-sign"></span>&nbsp;What is this</button>
+</div>
+<div class="row" style="border:1px solid black">
+    <form id="searchForm">
+        <table style="width:600px;" class="search-panel">
+            <tr>
+                <td style="padding:3px;text-align:left;height:55px;vertical-align:top">
+                    <select id="instructorIdInput"></select>
+                </td>
+                <td style="padding:3px;text-align:left;height:55px;vertical-align:top">
+                    <select id="monthInput">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </td>
+                <td style="text-align:left;padding:3px;height:55px;vertical-align:top">
+                    <div id="yearInput"></div>
+                </td>
+                <td style="text-align:left;padding:3px;vertical-align:top">
+                    <input type="button" id="searchButton" name="searchButton" value="Search" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+        <div class="row" id="timeSheetControlPanelBox">
+
+            <div class="col-md-4" style="padding:3px;border:1px solid black">
+                        <button class="btn btn-primary" id="generateButton">Generate time sheet data</button>
+            </div>
+        </div>
+
+    <hr />
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="helpContent_1_Modal" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content" >
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">What is this</h4>
+            </div>
+            <div class="modal-body" >
+                <h4>
+                    The objective of this view interface is:
+                </h4>
+                <ul>
+                    <li>To create time sheet data for testing purpose</li>
+                    <li>
+                        To assist an instructor on generating time sheet data for a particular month or year  so that 
+                        he can <u>update</u> the timesheet actual time-in and time-out data and obtain customer digital signature.<br />
+                        Important note: The system should automatically generate such timesheet data when the instructor creates his first timesheet time in time out detail at the beginning of the month.
+                    </li>
+                </ul>
+                <h4>Steps to generate the time sheet data</h4>
+                <ul>
+                    <li>Select an instructor</li>
+                    <li>Select month and year</li>
+                    <li>Click the <b>Generate time sheet data</b> button interface</li>
+                    <li>Wait for the system to generate the timesheet data and tabulate the data inside a grid interface.</li>
+                    <li>Inspect the accuracy of the timesheet data</li>
+                </ul>
+                <h4 style="color:red">System <b>will not help you</b> to generate a duplicate set of timesheet data for an instructor if it detects another set which has the same month and year inside the database</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+<hr />
+<div id='instructorTimeSheetDetailMainBox'>
+    <div id="timeSheetDetailGrid"></div>
+  
+</div>
+@section scripts{
+    <link href="~/lib/jqwidgets/jqwidgets/styles/jqx.base.css" rel="stylesheet" />
+    <link href="~/lib/jqwidgets/jqwidgets/styles/jqx.energyblue.css" rel="stylesheet" />
+    <script src="~/lib/jqwidgets/jqwidgets/jqxcore.js"></script>
+    <script src="~/lib/jqwidgets/jqwidgets/jqx-all.js"></script>
+
+    <script>
+        'use strict';
+        (function () {
+
+        //This viewUIState is very important to the function setupInputInterface()
+        window.viewUIState = {
+            instructorId: 0, month: new Date().getMonth() + 1, year: new Date().getFullYear()
+        };
+        window.timeSheetManager = null;
+        prepareInputInterface();
+
+        class WebFormData {
+            constructor(inInstructorId, inSimulatedCreatedAtDate) {
+                this.instructorId = inInstructorId;
+                this.simulatedCreatedAtDate = inSimulatedCreatedAtDate;
+            }
+        }
+
+          class TimeSheetManager{
+              constructor(inTimeSheetId = 0, inInstructorId = 0, inMonth = 0, inYear = 0, inMode = 'simulation') {
+                  this.gridElementId = '';
+                  this.instructorName = '';
+                this.timeSheetId = inTimeSheetId;
+                this.year = inYear;
+                this.month = inMonth;
+                this.mode = inMode;
+                this.timeSheetDetailListData = [];
+                this.timeSheetData = null;
+                this.instructorId = inInstructorId;
+              }
+              setGridElement(inElementId) {
+                  this.gridElementId = inElementId;
+
+              }
+            hasExistingData(){
+                if (this.timeSheetDetailListData.length == 0) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+            getTimeSheetDetailData() {
+                //https://stackoverflow.com/questions/34381595/accessing-this-of-an-object-inside-promise-callback-then
+                var that = this;
+                return new Promise(function (resolve, reject) {    
+                var $commTracker = $.ajax({
+                    url: '/API/TimeSheetDetails/GetTimeSheetAndTimeSheetDetails/',
+                    type: 'GET',
+                    data: { instructorId: that.instructorId, month: that.month, year: that.year },
+                    dataType: 'json',
+                    cache: false
+                });
+                $commTracker.done(function (data) {
+                    that.timeSheetData = data.timeSheet;
+                  
+                    var index = 0;
+                    for (index = 0; index < data.timeSheetDetails.length; index++) {
+                        var oneData = data.timeSheetDetails[index];
+                        that.timeSheetDetailListData.push(new TimeSheetDetail(oneData.timeSheetDetailId, oneData.actualTimeIn,
+                            oneData.actualTimeOut, oneData.customerAccountName,
+                            oneData.dateOfLesson, oneData.officialTimeIn, oneData.officialTimeOut,
+                            oneData.ratePerHour, oneData.wageRatePerHour, oneData.sessionSynopsisNames));
+                    }
+                    that.prepareGridInterface();
+                    resolve(data);
+                });
+                $commTracker.fail(function (data) {
+                    reject(data);
+                })
+                });
+            }
+        prepareGridInterface() {
+              var source =
+                  {
+                      datatype: 'json',
+                      datafields: [
+                          { name: 'customerAccountName', type: 'string' },
+                          { name: 'dateOfLesson', type: 'date' },
+                          { name: 'officialTimeIn', type: 'int' },
+                          { name: 'officialTimeOut', type: 'int' },
+                          { name: 'officialTimeInHHMM', type: 'string' },
+                          { name: 'officialTimeOutHHMM', type: 'string' },
+                          { name: 'actualTimeInHHMM', type: 'string' },
+                          { name: 'actualTimeOutHHMM', type: 'string' },
+                          { name: 'actualTimeIn', type: 'int' },
+                          { name: 'actualTimeOut', type: 'int' },
+                          { name: 'sessionSynopsisNames', type: 'string' },
+                          { name: 'ratePerHour', type: 'number' },
+                          { name: 'wageRatePerHour', type: 'number' },
+                          { name: 'calculatedTotalHour', type: 'number' },
+                          { name: 'calculatedWage', type: 'number' },
+                      ],
+                      id: 'timeSheetDetailId',
+                      localdata: this.timeSheetDetailListData
+                  };
+              var dataAdapter = new $.jqx.dataAdapter(source);
+              var actualTimeInCellRenderer = function (row, columnfield, value, defaulthtml, columnproperties, rowData) {
+
+                  if (rowData.actualTimeIn > rowData.officialTimeIn) {
+                      return '<span style="font-weight:bold;margin: 4px; float: ' + columnproperties.cellsalign + '; color:red;vertical-align:top">' + value + '</span>';
+                  } else if (rowData.actualTimeIn < rowData.officialTimeIn) {
+                      return '<span style="font-weight:bold;margin: 4px; float: ' + columnproperties.cellsalign + '; color: green;vertical-align:top">' + value + '</span>';
+                  }
+                  else {
+                      return '<span style="margin: 4px; float: ' + columnproperties.cellsalign + '; color: #000000;vertical-align:top">' + value + '</span>';
+                  }
+              }
+              var actualTimeOutCellRenderer = function (row, columnfield, value, defaulthtml, columnproperties, rowData) {
+
+                  if (rowData.actualTimeOut < rowData.officialTimeOut) {
+                      return '<span style="font-weight:bold;margin: 4px; float: ' + columnproperties.cellsalign + '; color:red;vertical-align:top">' + value + '</span>';
+                  }
+                  else if (rowData.actualTimeOut > rowData.officialTimeOut) {
+                      return '<span style="font-weight:bold;margin: 4px; float: ' + columnproperties.cellsalign + '; color: green;vertical-align:top">' + value + '</span>';
+                  } else {
+                      return '<span style="margin: 4px; float: ' + columnproperties.cellsalign + '; color: #000000;vertical-align:top">' + value + '</span>';
+
+                  }
+              }
+              var headerRenderer = function (defaultText, alignment, height) {
+
+                  return '<div style="float:left;margin-top:5px;margin-left:4px;width:100%;word-wrap: break-word;">' + defaultText + '</div>';
+              }
+
+              var wageCellRender = function (index, datafield, value, defaultvalue, column, rowData) {
+                  console.dir(rowData);
+                  return '<div style="margin: 4px;  background-color: #afd0ef;" class="jqx-left-align" >' + value + '</div>';
+
+              };
+              var totalHourOfServiceRender = function (index, datafield, value, defaultvalue, column, rowData) {
+                  return '<div style="margin: 4px;  background-color: #efd0ef;" class="jqx-left-align" >' + value + '</div>';
+
+              };
+              $('#' + this.gridElementId).jqxGrid(
+                  {
+                      rowdetailstemplate: {
+                          rowdetails: "<div style='margin: 30px; float:left;'>Row Details</div><div style='clear:both;'></div>",
+                          rowdetailsheight: 70
+                      },
+                      showtoolbar: true,
+                      rendertoolbar: function (toolbar) {
+                          var me = this;
+                          toolbar.empty();
+                          var $container = $("<div style='margin: 5px;'></div>");
+                          var $span = $("<span style='float: left; margin-top: 5px; margin-right: 4px;'></span>");
+                          if (window.timeSheetData != null) {
+                              $span.text('Timesheet of ' + this.instructorName
+                                  + ' for ' + this.month + ' ( ' + this.year + ' )');
+                          }
+                          toolbar.append($container);
+                          $container.append($span);
+											},
+											sortable: true,
+                      showstatusbar: true,
+                      statusbarheight: 80,
+                      showaggregates: true,
+                      columnsresize: true,
+											width: '95%',
+											autoheight: true,
+                      source: dataAdapter,
+                      columnsheight: 50,
+                      theme: 'energyblue',
+                      columns: [
+                          { text: 'Account name', datafield: 'customerAccountName', width: 150, renderer: headerRenderer },
+                          { text: 'Date of lesson', datafield: 'dateOfLesson', width: 140, cellsformat: 'ddd - d/M/yyyy', renderer: headerRenderer },
+                          { text: 'Lesson start time', datafield: 'officialTimeInHHMM', width: 110, renderer: headerRenderer },
+                          { text: 'Actual time in', datafield: 'actualTimeInHHMM', width: 100, cellsrenderer: actualTimeInCellRenderer, renderer: headerRenderer },
+                          { text: 'Lesson end time', datafield: 'officialTimeOutHHMM', width: 130, renderer: headerRenderer },
+                          { text: 'Actual time out', datafield: 'actualTimeOutHHMM', width: 130, renderer: headerRenderer, cellsrenderer: actualTimeOutCellRenderer },
+                          {
+                              text: 'Total time (Hr)',
+                              renderer: headerRenderer,
+                              datafield: 'calculatedTotalHour',
+                              editable: false,
+                              width: 100,
+                              cellsformat: 'f2',
+                              cellsrenderer: totalHourOfServiceRender,
+                              aggregates: ['sum'],
+                              aggregatesrenderer: function (aggregates, column, element, summaryData) {
+                                  var renderstring = "<pre>Total hours \n";
+                                  $.each(aggregates, function (key, value) {
+                                      var name = key == 'calculatedTotalHour';
+                                      renderstring += '<div style="font-size:12pt;font-weight:bold;">' + value + '</div>';
+                                  });
+                                  renderstring += "</pre>";
+                                  return renderstring;
+                              }
+                          },
+                          { text: 'Rate chargeable per hour', datafield: 'ratePerHour', width: 140, renderer: headerRenderer, cellsformat: 'd2' },
+                          { text: 'Wage Rate per hour', datafield: 'wageRatePerHour', width: 140, renderer: headerRenderer, cellsformat: 'p' },
+                          {
+                              text: 'Calculated wage',
+                              datafield: 'calculatedWage',
+                              cellsrenderer: wageCellRender,
+                              renderer: headerRenderer,
+                              cellsformat: 'f2',
+                              editable: false,
+                              width: 100,
+                              cellsalign: 'left',
+                              aggregates: ['sum'],
+                              aggregatesrenderer: function (aggregates, column, element, summaryData) {
+                                  var renderstring = "<pre>Total wage \n";
+                                  $.each(aggregates, function (key, value) {
+                                      var name = key == 'calculatedWage';
+                                      renderstring += '<div style="font-size:12pt;font-weight:bold;">' + value + '</div>';
+                                  });
+                                  renderstring += "</pre>";
+                                  return renderstring;
+                              }
+                          },
+                          { text: 'Session Synopses', datafield: 'sessionSynopsisNames', width: 150, renderer: headerRenderer }
+                      ]
+                  });
+              if (window.timeSheetData != null) {
+                  if (window.timeSheetData.approvedAt == null) {
+                      $('#approveDatePlainText').text('N.A.');
+                  } else {
+                      $('#approveDatePlainText').text(moment(window.timeSheetData.approvedAt).format('DD/MM/YYYY hh:mm a'));
+                  }
+              }
+          }//end of prepareGridInterface
+        }
+
+        class TimeSheetDetail{
+            constructor(inTimeSheetDetailId, inActualTimeIn, inActualTimeOut, inCustomerAccountName,
+                inDateOfLesson, inOfficialTimeIn, inOfficialTimeOut, inRatePerHour, inWageRatePerHour, inSessionSynopsisNames){
+                this.actualTimeIn = inActualTimeIn;
+                this.actualTimeOut = inActualTimeOut;
+                this.customerAccountName = inCustomerAccountName;
+                this.dateOfLesson = inDateOfLesson;
+                this.officialTimeIn = inOfficialTimeIn;
+                this.officialTimeOut = inOfficialTimeOut;
+                this.ratePerHour = inRatePerHour;
+                this.sessionSynopsisNames = inSessionSynopsisNames;
+                this.timeSheetDetailId = inTimeSheetDetailId;
+                this.wageRatePerHour = inWageRatePerHour;
+
+                this.actualTimeInHHMM = this.getTimeFromMins(this.actualTimeIn);
+                this.actualTimeOutHHMM = this.getTimeFromMins(this.actualTimeOut);
+                this.officialTimeInHHMM = this.getTimeFromMins(this.officialTimeIn);
+                this.officialTimeOutHHMM = this.getTimeFromMins(this.officialTimeOut);
+                this.calculatedTotalHour = this.calculateTotalHour();
+                this.calculatedWage = this.calculateWage();
+                
+            }
+           calculateWage() {
+                var totalHour = (this.actualTimeOut - this.actualTimeIn) / 60;
+                var result = parseFloat((totalHour * this.ratePerHour) * (this.wageRatePerHour / 100)).toFixed(2);
+                return result;
+            }
+            calculateTotalHour() {
+                var totalHour = (this.actualTimeOut - this.actualTimeIn) / 60;
+                var total = parseFloat(totalHour).toFixed(2);
+                return total;
+            }
+            getTimeFromMins(mins) {
+                //https://stackoverflow.com/questions/36035598/how-to-convert-minutes-to-hours-using-moment-js
+                // Do not include the first validation check if you want, for example,
+                // getTimeFromMins(1530) to equal getTimeFromMins(90) (i.e. mins rollover)
+                if (mins >= 24 * 60 || mins < 0) {
+                    throw new RangeError("Valid input should be greater than or equal to 0 and less than 1440.");
+                }
+                var h = mins / 60 | 0,
+                    m = mins % 60 | 0;
+                return moment.utc().hours(h).minutes(m).format("hh:mm A");
+            }
+        }//end of class TimeSheetDetail
+
+
+
+        function prepareInputInterface() {
+            $.ajax({
+                url: '/API/UserInfo/GetAllActiveInstructorData',
+                type: 'GET',
+                contentType: 'application/json'
+            }).done(function (data) {
+                for (index = 0; index < data.length; index++) {
+                    $('#instructorIdInput').append($('<option>' + data[index].fullName + '</option>').attr('value', data[index].instructorId));
+                }//for
+                $('#instructorIdInput').jqxDropDownList({ selectedIndex: 0, width: 120, height: 25 });
+                $('#instructorIdInput').jqxDropDownList('val', window.viewUIState.instructorId);
+            });
+            console.log(window.viewUIState)
+            $('#generateButton').jqxButton({ disabled: true });
+            $('#generateButton').on('click', function (event) {
+                var monthValue = $('#monthInput').jqxDropDownList('val');
+                var yearValue = $('#yearInput').jqxComboBox('val');
+                var instructorId = $('#instructorIdInput').jqxDropDownList('val');
+                var simulatedCreatedAtDate = '01/' + monthValue + '/' + yearValue;
+                var webFormData = new WebFormData(instructorId, simulatedCreatedAtDate);
+
+                var $saveDataHandler = jQuery.ajax({
+                    type: 'POST',
+                    url: '/API/AdminTimeSheetDetails/CreateTimeSheetData',
+                    dataType: 'json',
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                    },
+                    data: webFormData,
+                    contentType: 'application/x-www-form-urlencoded',
+                })
+                $saveDataHandler.done(function (data, textStatus, jqXHR) {
+                    new Noty({
+                        theme: 'bootstrap-v3',
+                        text: data.message,
+                        layout: 'top',
+                        type: 'success',
+                        closeWith: ['click', 'button']
+                    }).show();
+                });//end of $saveDataHandler.done()
+                $saveDataHandler.fail(function (data, textStatus, jqXHR) {
+                    var infoFromServer = data.responseJSON.message;
+                    new Noty({
+                        theme: 'bootstrap-v3',
+                        text: infoFromServer, type: 'error',
+                        layout: 'top',
+                        onTemplate: function () {
+                            this.barDom.innerHTML = '<div class="noty_body">' + this.options.text + '</div>';
+                            // Important: .noty_body class is required for setText API method.
+                        }
+                    }).show();//end of new Noty()
+                });//end of $saveDataHandler.fail()
+
+            });
+            $('#monthInput').jqxDropDownList({ theme: 'bootstrap', selectedIndex: 0, width: 120, height: 25 });
+            $('#monthInput').jqxDropDownList('val', window.viewUIState.month);
+            //Calculate the minimum year and maximum year
+            var currentYear = new Date().getFullYear();
+            var minYear = currentYear - 3;
+            var maxYear = currentYear + 3;
+            var sourceYear = [];
+            var index = 0;
+            var value = '';
+            for (value = minYear; value <= maxYear; value++) {
+                sourceYear[index] = { text: value, value: value };
+                index++;
+            }
+
+            var source =
+                {
+                    datatype: 'json',
+                    datafields: [
+                        { name: 'text' }, { name: 'value' }
+                    ],
+                    localdata: sourceYear
+                };
+            var dataAdapter = new $.jqx.dataAdapter(source);
+            $('#yearInput').jqxComboBox({ selectedIndex: 0, source: dataAdapter, displayMember: 'text', valueMember: 'value', width: '120', height: '25', });
+            $('#yearInput').jqxComboBox('val', window.viewUIState.year);
+            $('#searchButton').jqxButton({ theme: 'bootstrap' }).on('click', function () {
+                var year = $('#yearInput').val();
+                var month = $('#monthInput').val();
+                console.dir(year + ':' + month);
+                $('#searchForm').jqxValidator('validate');
+                window.event.returnValue = false;
+            });
+
+
+            $('#searchForm').jqxValidator({
+                hintType: 'label',
+                rules: [
+                    {
+                        input: '#yearInput', message: 'A valid value is needed', action: 'keyup,blur', rule: function (data, commit) {
+                            if (validateYear($('#yearInput').jqxComboBox('val')) == false) {
+                                return false;
+                            } else { return true; }
+                        }
+                    },
+                ]
+            });
+
+            $('#searchForm').on('validationSuccess', function (event) {
+                var monthValue = $('#monthInput').jqxDropDownList('val');
+                var yearValue = $('#yearInput').jqxComboBox('val');
+                var instructorId = $('#instructorIdInput').jqxDropDownList('val');
+                var uiState = { instructorId: instructorId, month: monthValue, year: yearValue };
+                window.timeSheetManager = new TimeSheetManager(0, instructorId, monthValue, yearValue);
+                window.timeSheetManager.setGridElement('timeSheetDetailGrid')
+                window.timeSheetManager.getTimeSheetDetailData()
+                    .then(function (data) {
+                        if (window.timeSheetManager.hasExistingData()) {
+                            new Noty({ text: 'There is data. You cannot create a set of data.' , type:'info', layout:'topCenter'}).show();
+                        } else {
+                            new Noty({ text: 'There is no data. You can generate one set of data.', type:'success',layout:'topCenter' }).show();
+                        };
+                        if (window.timeSheetManager.hasExistingData()) {
+                            $('#generateButton').jqxButton({ disabled: true });
+                        } else {
+                            $('#generateButton').jqxButton({ disabled: false });
+                        }
+                    }, function (err) { console.log("Error! " + err); });
+                
+                //Write the user selected information into sessionStorage
+                window.sessionStorage.setItem('manage_timesheetdetail_ui_state', JSON.stringify(uiState));
+
+
+
+            });
+
+            function validateYear(year) {
+
+                var itIsNumber = /^\d{4}$/.test(year); // true if it is what you want
+                return itIsNumber;
+
+            }//validateYear
+
+        }//prepareInputInterface
+
+
+        })();//https://stackoverflow.com/questions/8228281/what-is-the-function-construct-in-javascript
+    </script>
+ }

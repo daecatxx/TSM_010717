@@ -1,0 +1,329 @@
+﻿<style>
+
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel  panel-primary">
+            <div class="panel-heading">
+                <div class="panel-title"><h3>Manage Instructor Assignment to <span style="text-decoration:underline;" id="accountNameTextBlock"></span></h3></div>
+            </div>
+        </div><!-- ending the div panel here -->
+    </div>
+</div>
+<div class="row">
+    <span style="float:right;margin-bottom:15px;">
+        <a id="assignOneInstructorToCustomerAccountBtn" href="/InstructorAccounts/AssignInstructor"
+           class="btn btn-primary btn-lg">Assign Instructor</a>
+    </span>
+    <div id="no-more-tables">
+        <table id="instructorAccountTable"
+               class="col-md-12 table-bordered table-striped table-condensed cf table-responsive ">
+            <thead class="cf">
+                <tr>
+                    <th data-field="recordId">#</th>
+                    <th>Actions</th>
+                    <th style="width:10%">Instructor</th>
+                    <th style="width:15%">Wage Rate</th>
+                    <th style="width:20%">Comments</th>
+                    <th style="width:10%">Effective Start Date</th>
+                    <th style="width:10%">Effective End Date</th>
+                    @*<th style="width:5%">Current Instructor</th>*@
+                    <th style="width:5%">&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody id="instructorAccountTableBody"></tbody>
+        </table>
+
+    </div>
+</div>
+
+
+<!-- context menu definition start : to be used by the JavaScript logic to build context menu for each row.-->
+<ul id="context-menu" class="dropdown-menu" style="font-size:14pt;">
+    <li data-item="updateAssignment"><a>Update Assignment</a></li>
+</ul>
+
+@*<div class="modal fade" id="confirm-unassign" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Unassign Instructor from <span style="font-weight:bold" id="accountName"></span>
+            </div>
+            <div class="modal-body">
+
+                <b>Unassigning this instructor from account will cause this record to be removed permananently.</b>
+                <div style="width:50%;margin:0 auto;color:red;font-weight:bold;">Continue unassigning instructor?</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <a id="deleteInstructorAssignmentBtn" class="btn btn-danger btn-ok">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>*@
+
+
+<!-- context menu definition end -->
+@section Scripts{
+    <script>
+        window.customerAccountId = getIdFromAddressBar();
+
+        //The following JavaScript function is reused often
+        //to collect id value from the address bar for global scope variable
+        //such as window.studentId, window.companyId,window.courseId etc
+        function getIdFromAddressBar() {
+            var urlArray = window.location.href.split('/');
+            var id = urlArray[urlArray.length - 1];
+            return id;
+        };
+
+
+        function getCustomerAccountNameFromCookie() {
+            //Obtain the customer account name from the cookie
+            //customer_account_name
+            var cookieValue = Cookies.getJSON('customer_account');
+            console.dir(cookieValue);
+            return he.decode(cookieValue.accountName);//https://www.w3schools.com/jsref/jsref_decodeuricomponent.asp
+        }
+
+        $('#assignOneInstructorToCustomerAccountBtn').attr('href', '/InstructorAccounts/AssignInstructor/' + window.customerAccountId);
+        $('#accountNameTextBlock').text(getCustomerAccountNameFromCookie());
+
+
+        //$('#accountName').text(getCustomerAccountNameFromCookie());
+
+        $(document).ready(function () {
+            loadInstructorAccountData();
+
+        })
+
+
+        function loadInstructorAccountData() {
+            //Note: jQuery.ajax(..) is also often written is $.ajax(..)
+            $loadInstructorAccountDataHandler = jQuery.ajax({
+                url: '/API/InstructorAccounts/GetAssignedInstructorsByCustomerAccount/' + window.customerAccountId,
+                method: 'GET',
+                dataType: 'json',
+                cache: true,
+            });
+            $loadInstructorAccountDataHandler.done(function (data, textStatus, jqXHR) {
+
+                //var jsonCustomerAccountData = { accountName: data.account.accountName, customerAccountId: data.account.customerAccountId };
+                //$('#accountNameTextBlock').text(data.account.accountName);
+                //Cookies.set("customer_account", jsonCustomerAccountData, { path: "/" });
+                var instructorAccountList = data.instructorAccountList;
+                var instructorAccountId = '';
+                var wageRate = '';
+                var comments = '';
+                //var isCurrent = '';
+                var effectiveStartDate = '';
+                var effectiveEndDate = '';
+
+                var $tableElement = null;
+                var $cellElement = null;
+                var $rowElement = null;
+
+              
+
+
+                //-------- Find the table element -----------
+                //I am using the $tableElement variable
+                //to represent the found HTML element which has a matching id of accountDetailTableBody
+                $tableBodyElement = $('#instructorAccountTableBody');
+
+                //I want to build rows and cells (using tr and td HTML elements) so that
+                //I can display week day name, effective start date / end date,  start time, end time etc
+                //within the HTML table element, accountDetailTableBody. Recall that, I have already asked the
+                //$tableBodyElement variable to represent (reference) the table element.
+
+                //-------- Begin creating <tr> and <td> HTML element ------
+                for (index = 0; index < instructorAccountList.length; index++) {
+
+                    instructorAccount = instructorAccountList[index];
+                    //Copy out the instructor account information
+                    instructorAccountId = instructorAccount.instructorAccountId;
+                    fullName = instructorAccount.fullName;
+                    wageRate = instructorAccount.wageRate;
+
+
+                    //accountName = instructorAccount.customerAccount.accountName;
+                    comments = instructorAccount.comments;
+                    effectiveStartDate = moment(new Date(instructorAccount.effectiveStartDate)).format("DD/MM/YYYY");
+                    effectiveEndDate = (instructorAccount.effectiveEndDate != null) ?
+                        moment(new Date(instructorAccount.effectiveEndDate)).format("DD/MM/YYYY")
+                        : 'NA';
+                    //isCurrent = instructorAccount.isCurrent;
+
+                   
+                    //Create new HTML <tr> element.
+                    //At the same time let the $rowElement variable to represent it.
+                    $rowElement = $('<tr></tr>');
+                    $cellElement = $('<td></td>', { text: instructorAccountId }); //This cell will be hidden by other JavaScript logic here.
+                    $rowElement.append($cellElement);
+
+                    //--------------- Add the a new cell element into the row represented by the $rowElement
+                    //Notice that, this is calling a generateContextMenuButton method which will return a new cell element
+                    $rowElement.append(generateContextMenuButton());
+
+                    //Create the cell element which display name
+                    $cellElement = $('<td></td>', { text: fullName });
+                    $cellElement.attr('data-title', 'Instructor');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display wage rate
+                    $cellElement = $('<td></td>', { text: wageRate });
+                    $cellElement.attr('data-title', 'Wage Rate');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display comments
+                    $cellElement = $('<td></td>')
+                        .append($('<div class="truncate-ellipsis"></div>')
+                            .append($('<span></span>', { text: comments })));
+                    $cellElement.attr('data-title', 'Comments');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display effective start date
+                    $cellElement = $('<td></td>', { text: effectiveStartDate });
+                    $cellElement.attr('data-title', 'Effective start date');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display effective end date
+                    $cellElement = $('<td></td>', { text: effectiveEndDate });
+                    $cellElement.attr('data-title', 'Effective end date');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display visibility status indicator
+                    //$cellElement = $('<td></td>');
+                    //$spanElement = $('<span></span>');
+                    //$spanElement.addClass(isCurrent ? 'glyphicon glyphicon-ok' : 'glyphicon glyphicon-remove');
+                    //$cellElement.append($spanElement);
+                    //$cellElement.attr('data-title', 'Current Instructor');
+                    //$rowElement.append($cellElement);
+
+
+
+                    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                    $hyperLinkElement = $('<a>Update Assignment</a>').attr('href', '/InstructorAccounts/UpdateInstructorAssignment/' + instructorAccountId);
+                        //{
+                        //    'data-target': '#confirm-unassign',
+                        //    'data-toggle': 'modal'
+                        //});
+                    //
+
+
+
+
+                    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                    $cellElement = $('<td></td>');
+                    $cellElement.append($hyperLinkElement);
+
+
+                    ////---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                    //$hyperLinkElement = $('<a>Unassign Instructor</a>').attr('href', '/InstructorAccounts/UpdateInstructorAssignment/' + instructorAccountId);
+                    //$hyperLinkElement.addClass('btn btn-primary btn-lg');
+                    //$cellElement = $('<td></td>');
+                    //$cellElement.append($hyperLinkElement);
+                    //After letting the cell element containing the hyperlink element
+                    //---------------Add the the new cell element into the row represented by the $rowElement
+                    $rowElement.append($cellElement);
+
+                    //Insert the $rowElement into the table element represented by $tableBodyElement.
+                    $tableBodyElement.append($rowElement);
+                    //----End of creating one row to display one account detail by using <tr> and <td> HTML element ---
+                    // Proceed to the next accountDetail object in the accountDetailList Array.
+                }//end of for loop.
+                prepareContextMenu();
+
+                $('#instructorAccountTable td:nth-child(1)').hide();//Hiding first column which display record id numbers
+                $('#instructorAccountTable th:nth-child(1)').hide();//Hiding first column which display record id numbers
+
+            }//end of JavaScript anonymous function
+            )//end of the done() method;
+            $loadInstructorAccountDataHandler.fail(function (data, textStatus, jqXHR) {
+                new Noty({
+                    text: 'Ajax call has failed due to : ' + data.statusText, type: 'error',
+                    layout: 'center',
+                    type: 'error',
+                    closeWith: ['click', 'button']
+                }).show();//end of noty()
+            })//end of $loadAccountDetailDataHandler.fail()
+        }//end of loadAccountDetailData();
+
+
+        ////Unassign Instructor button
+        //$("#deleteInstructorAssignmentBtn").on('click', function () {
+
+        //    $deleteInstructorAccountDataHandler = jQuery.ajax({
+        //        url: '/API/InstructorAccounts/DeleteInstructorAccount/' + getInstructorAccountId(instructorAccountId),
+        //        method: 'Delete',
+        //        dataType: 'json',
+        //        cache: true,
+        //    })//end of jQuery.ajax() call
+        //    $deleteInstructorAccountDataHandler.done(function (data, textStatus, jqXHR) {
+        //        new Noty({
+        //            theme: 'bootstrap-v3',
+        //            text: data.message,
+        //            layout: 'top',
+        //            type: 'success',
+        //            closeWith: ['click', 'button']
+        //        }).show();
+        //    });//end of $deleteInstructorAccountDataHandler.done()
+        //    $deleteInstructorAccountDataHandler.fail(function (data, textStatus, jqXHR) {
+        //        var infoFromServer = data.responseJSON.message;
+        //        new Noty({
+        //            theme: 'bootstrap-v3',
+        //            text: infoFromServer, type: 'error',
+        //            layout: 'top',
+        //            onTemplate: function () {
+        //                this.barDom.innerHTML = '<div class="noty_body">' + this.options.text + '</div>';
+        //                // Important: .noty_body class is required for setText API method.
+        //            }
+        //        }).show();//end of new Noty()
+        //    });//end of $saveDataHandler.fail()
+        //})
+
+        function generateContextMenuButton() {
+            var $cellElement = $('<td></td>');
+            var $divContainer = $('<div class="btn-group btn-group-xs"></div>');
+            var $buttonElement = $('<button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>');
+            $buttonElement.addClass('row-action-button');
+            var $buttonDetailElements = $('<span  class="caret"></span>').append($('<span class="sr-only">Toggle Dropdown</span>'));
+            $cellElement.append($divContainer.append($buttonElement.append($buttonDetailElements)));
+            /* I have referenced the author's HTML sample at http://www.prograhammer.com/demos/bootstrap-table-contextmenu/
+            < td >
+                <div class='btn-group btn-group-xs'>
+                    <button type='button' class='btn btn-default dropdown-toggle row-action-button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+                        <span class='caret'></span>
+                        <span class='sr-only'>Toggle Dropdown</span>
+                    </button>
+                </div>
+            </td>
+      */
+            $cellElement.attr('data-title', 'Actions'); //For responsive display purpose
+            return $cellElement;
+        }
+
+        //Reference: https://github.com/prograhammer/bootstrap-table-contextmenu
+        //For building responsive context menu. There are too many buttons taking up the widht
+        //of the table display.
+        function prepareContextMenu() {
+
+            $('#instructorAccountTable').bootstrapTable({
+                rowStyle: 'rowStyle',
+                contextMenu: '#context-menu',
+                contextMenuButton: '.row-action-button',
+                contextMenuAutoClickRow: true,
+                onClickRow: function (row, $el) {
+                    $('#customerAccountTable').find('.success').removeClass('success');
+                    $el.addClass('success');
+                },
+                onContextMenuItem: function (row, $el) {
+                    if ($el.data('item') == 'update_assignment') {
+                        //alert('update account detail record id : ' + row.recordId);
+                        var jsonData = { accountName: row.accountName };
+                        Cookies.set("instructor_account", jsonData, { path: "/" });
+                        //window.location = '/InstructorAccounts/ManageInstructorAccount/' + row.recordId;
+                        window.location = '/InstructorAccounts/UpdateInstructorAssignment/' + row.recordId;
+                    }
+                }
+            });
+        }//end of function prepareContextMenu
+    </script>
+}
+
+

@@ -1,0 +1,699 @@
+﻿
+GO
+/****** Object:  UserDefinedFunction [dbo].[ConvertHHMMToMinutes]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE FUNCTION [dbo].[ConvertHHMMToMinutes] (@inHHMM varchar(10))
+  RETURNS INT
+AS BEGIN
+  DECLARE @calculatedMinutes INT
+  DECLARE @time DATETIME = @inHHMM
+  SET @calculatedMinutes =  ((DATEPART(HOUR, @time)*60) + (DATEPART(MINUTE, @time)))
+  RETURN @calculatedMinutes
+END
+
+
+;
+
+GO
+/****** Object:  UserDefinedFunction [dbo].[ConvertMinutesToHHMM]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE FUNCTION [dbo].[ConvertMinutesToHHMM]
+(
+    @inMinutes int 
+)
+RETURNS nvarchar(30)
+
+AS
+BEGIN
+declare @hhmm nvarchar(20)
+
+SET @hhmm = 
+    CASE WHEN @inMinutes >= 60 THEN
+        (SELECT FORMAT((@inMinutes / 60) , '00')+  ':'  + 
+                CASE WHEN (@inMinutes % 60) > 0 THEN
+                    FORMAT(@inMinutes % 60,'00') 
+                ELSE
+                    '00'
+                END)
+    ELSE 
+        FORMAT(@inMinutes % 60,'00' )
+    END
+
+return @hhmm
+END
+
+
+;
+
+GO
+/****** Object:  Table [dbo].[__EFMigrationsHistory]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[__EFMigrationsHistory](
+	[MigrationId] [nvarchar](150) NOT NULL,
+	[ProductVersion] [nvarchar](32) NOT NULL,
+ CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY CLUSTERED 
+(
+	[MigrationId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[AccountDetail]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AccountDetail](
+	[AccountDetailId] [int] IDENTITY(1,1) NOT NULL,
+	[CustomerAccountId] [int] NOT NULL,
+	[DayOfWeekNumber] [int] NOT NULL,
+	[EffectiveStartDate] [datetime2](7) NOT NULL,
+	[EffectiveEndDate] [datetime2](7) NULL,
+	[StartTimeInMinutes] [int] NOT NULL,
+	[EndTimeInMinutes] [int] NOT NULL,
+	[IsVisible] [bit] NOT NULL DEFAULT ((1)),
+ CONSTRAINT [PrimaryKey_AccountDetailId] PRIMARY KEY CLUSTERED 
+(
+	[AccountDetailId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[AccountRate]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AccountRate](
+	[AccountRateId] [int] IDENTITY(1,1) NOT NULL,
+	[CustomerAccountId] [int] NOT NULL,
+	[RatePerHour] [decimal](6, 2) NOT NULL,
+	[EffectiveStartDate] [datetime2](7) NOT NULL,
+	[EffectiveEndDate] [datetime2](7) NULL,
+ CONSTRAINT [PrimaryKey_AccountRateId] PRIMARY KEY CLUSTERED 
+(
+	[AccountRateId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[AspNetRoleClaims]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AspNetRoleClaims](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[ClaimType] [nvarchar](max) NULL,
+	[ClaimValue] [nvarchar](max) NULL,
+	[RoleId] [nvarchar](450) NOT NULL,
+ CONSTRAINT [PK_AspNetRoleClaims] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[AspNetRoles]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AspNetRoles](
+	[Id] [nvarchar](450) NOT NULL,
+	[ConcurrencyStamp] [nvarchar](max) NULL,
+	[Name] [nvarchar](256) NULL,
+	[NormalizedName] [nvarchar](256) NULL,
+ CONSTRAINT [PK_AspNetRoles] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[AspNetUserClaims]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AspNetUserClaims](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[ClaimType] [nvarchar](max) NULL,
+	[ClaimValue] [nvarchar](max) NULL,
+	[UserId] [nvarchar](450) NOT NULL,
+ CONSTRAINT [PK_AspNetUserClaims] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[AspNetUserLogins]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AspNetUserLogins](
+	[LoginProvider] [nvarchar](450) NOT NULL,
+	[ProviderKey] [nvarchar](450) NOT NULL,
+	[ProviderDisplayName] [nvarchar](max) NULL,
+	[UserId] [nvarchar](450) NOT NULL,
+ CONSTRAINT [PK_AspNetUserLogins] PRIMARY KEY CLUSTERED 
+(
+	[LoginProvider] ASC,
+	[ProviderKey] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[AspNetUserRoles]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AspNetUserRoles](
+	[UserId] [nvarchar](450) NOT NULL,
+	[RoleId] [nvarchar](450) NOT NULL,
+ CONSTRAINT [PK_AspNetUserRoles] PRIMARY KEY CLUSTERED 
+(
+	[UserId] ASC,
+	[RoleId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[AspNetUsers]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AspNetUsers](
+	[Id] [nvarchar](450) NOT NULL,
+	[AccessFailedCount] [int] NOT NULL,
+	[ConcurrencyStamp] [nvarchar](max) NULL,
+	[Email] [nvarchar](256) NULL,
+	[EmailConfirmed] [bit] NOT NULL,
+	[FullName] [nvarchar](max) NULL,
+	[LockoutEnabled] [bit] NOT NULL,
+	[LockoutEnd] [datetimeoffset](7) NULL,
+	[NormalizedEmail] [nvarchar](256) NULL,
+	[NormalizedUserName] [nvarchar](256) NULL,
+	[PasswordHash] [nvarchar](max) NULL,
+	[PhoneNumber] [nvarchar](max) NULL,
+	[PhoneNumberConfirmed] [bit] NOT NULL,
+	[SecurityStamp] [nvarchar](max) NULL,
+	[TwoFactorEnabled] [bit] NOT NULL,
+	[UserName] [nvarchar](256) NULL,
+ CONSTRAINT [PK_AspNetUsers] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[AspNetUserTokens]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[AspNetUserTokens](
+	[UserId] [nvarchar](450) NOT NULL,
+	[LoginProvider] [nvarchar](450) NOT NULL,
+	[Name] [nvarchar](450) NOT NULL,
+	[Value] [nvarchar](max) NULL,
+ CONSTRAINT [PK_AspNetUserTokens] PRIMARY KEY CLUSTERED 
+(
+	[UserId] ASC,
+	[LoginProvider] ASC,
+	[Name] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[CustomerAccount]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[CustomerAccount](
+	[CustomerAccountId] [int] IDENTITY(1,1) NOT NULL,
+	[AccountName] [varchar](100) NOT NULL,
+	[Comments] [nvarchar](4000) NULL,
+	[IsVisible] [bit] NOT NULL DEFAULT ((1)),
+	[CreatedById] [int] NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL DEFAULT (getdate()),
+	[UpdatedById] [int] NOT NULL,
+	[UpdatedAt] [datetime2](7) NOT NULL DEFAULT (getdate()),
+ CONSTRAINT [PrimaryKey_CustomerAccountId] PRIMARY KEY CLUSTERED 
+(
+	[CustomerAccountId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+SET ANSI_PADDING OFF
+GO
+/****** Object:  Table [dbo].[InstructorAccount]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[InstructorAccount](
+	[InstructorAccountId] [int] IDENTITY(1,1) NOT NULL,
+	[InstructorId] [int] NOT NULL,
+	[WageRate] [decimal](5, 2) NOT NULL,
+	[Comments] [nvarchar](4000) NULL,
+	[CustomerAccountId] [int] NOT NULL,
+	[EffectiveStartDate] [datetime2](7) NOT NULL,
+	[EffectiveEndDate] [datetime2](7) NULL,
+	[IsCurrent] [bit] NOT NULL DEFAULT ((1)),
+ CONSTRAINT [PrimaryKey_InstructorAccounttId] PRIMARY KEY CLUSTERED 
+(
+	[InstructorAccountId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[SessionSynopsis]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[SessionSynopsis](
+	[SessionSynopsisId] [int] IDENTITY(1,1) NOT NULL,
+	[SessionSynopsisName] [varchar](100) NOT NULL,
+	[CreatedById] [int] NOT NULL,
+	[UpdatedById] [int] NOT NULL,
+	[IsVisible] [bit] NOT NULL DEFAULT ((0)),
+ CONSTRAINT [PrimaryKey_SessionSynopsisId] PRIMARY KEY CLUSTERED 
+(
+	[SessionSynopsisId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+SET ANSI_PADDING OFF
+GO
+/****** Object:  Table [dbo].[TimeSheet]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TimeSheet](
+	[TimeSheetId] [int] IDENTITY(1,1) NOT NULL,
+	[InstructorId] [int] NOT NULL,
+	[ApprovedById] [int] NULL,
+	[ApprovedAt] [datetime2](7) NULL,
+	[CreatedAt] [datetime2](7) NOT NULL CONSTRAINT [DF__TimeSheet__Creat__32E0915F]  DEFAULT (getdate()),
+	[CreatedById] [int] NOT NULL,
+	[VerifiedAndSubmittedAt] [datetime2](7) NULL,
+	[MonthAndYear] [datetime2](7) NOT NULL,
+	[UpdatedAt] [datetime2](7) NOT NULL CONSTRAINT [DF__TimeSheet__Updat__33D4B598]  DEFAULT (getdate()),
+	[UpdatedById] [int] NOT NULL,
+ CONSTRAINT [PrimaryKey_TimeSheetId] PRIMARY KEY CLUSTERED 
+(
+	[TimeSheetId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[TimeSheetDetail]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[TimeSheetDetail](
+	[TimeSheetDetailId] [int] IDENTITY(1,1) NOT NULL,
+	[TimeSheetId] [int] NOT NULL,
+	[DateOfLesson] [datetime2](7) NOT NULL,
+	[WageRatePerHour] [decimal](6, 2) NOT NULL,
+	[RatePerHour] [decimal](6, 2) NOT NULL,
+	[IsReplacementInstructor] [bit] NOT NULL CONSTRAINT [DF__TimeSheet__IsRep__45F365D3]  DEFAULT ((0)),
+	[OfficialTimeInMinutes] [int] NOT NULL,
+	[OfficialTimeOutMinutes] [int] NOT NULL,
+	[SessionSynopsisNames] [varchar](300) NOT NULL,
+	[TimeInInMinutes] [int] NOT NULL,
+	[TimeOutInMinutes] [int] NOT NULL,
+	[AccountName] [varchar](100) NULL,
+	[CreatedByName] [varchar](100) NULL,
+	[CreatedAt] [datetime2](7) NULL,
+	[UpdatedByName] [varchar](100) NULL,
+	[UpdatedAt] [datetime2](7) NULL,
+ CONSTRAINT [PrimaryKey_TimeSheetDetailId] PRIMARY KEY CLUSTERED 
+(
+	[TimeSheetDetailId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+SET ANSI_PADDING OFF
+GO
+/****** Object:  Table [dbo].[TimeSheetDetailSignature]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[TimeSheetDetailSignature](
+	[TimeSheetDetailSignatureId] [int] IDENTITY(1,1) NOT NULL,
+	[Signature] [varbinary](max) NULL,
+	[TimeSheetIDetailId] [int] NOT NULL,
+ CONSTRAINT [PrimaryKey_TimeSheetSignatureId] PRIMARY KEY CLUSTERED 
+(
+	[TimeSheetDetailSignatureId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+SET ANSI_PADDING OFF
+GO
+/****** Object:  Table [dbo].[UserInfo]    Script Date: 5/28/2017 8:38:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[UserInfo](
+	[UserInfoId] [int] IDENTITY(1,1) NOT NULL,
+	[LoginUserName] [varchar](10) NOT NULL,
+	[Email] [varchar](50) NOT NULL,
+	[FullName] [varchar](100) NOT NULL,
+	[IsActive] [bit] NOT NULL DEFAULT ((1)),
+ CONSTRAINT [PrimaryKey_UserInfoId] PRIMARY KEY CLUSTERED 
+(
+	[UserInfoId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+SET ANSI_PADDING OFF
+GO
+INSERT [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion]) VALUES (N'20170517154103_setupdb', N'1.1.1')
+GO
+SET IDENTITY_INSERT [dbo].[AccountDetail] ON 
+
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (3, 6, 1, CAST(N'2017-06-01 00:00:00.0000000' AS DateTime2), NULL, 600, 720, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (5, 6, 4, CAST(N'2017-06-01 00:00:00.0000000' AS DateTime2), NULL, 540, 720, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (6, 7, 2, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL, 720, 840, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (8, 7, 2, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL, 660, 780, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (9, 8, 1, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL, 900, 1020, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (10, 8, 1, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL, 900, 1140, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (11, 8, 2, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL, 540, 660, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (12, 8, 3, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL, 540, 660, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (13, 8, 4, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL, 540, 660, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (14, 8, 5, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL, 540, 660, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (15, 8, 6, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL, 540, 660, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (16, 8, 7, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL, 540, 720, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (17, 5, 7, CAST(N'2017-03-01 00:00:00.0000000' AS DateTime2), NULL, 1140, 1320, 1)
+GO
+INSERT [dbo].[AccountDetail] ([AccountDetailId], [CustomerAccountId], [DayOfWeekNumber], [EffectiveStartDate], [EffectiveEndDate], [StartTimeInMinutes], [EndTimeInMinutes], [IsVisible]) VALUES (18, 7, 7, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL, 600, 720, 1)
+GO
+SET IDENTITY_INSERT [dbo].[AccountDetail] OFF
+GO
+SET IDENTITY_INSERT [dbo].[AccountRate] ON 
+
+GO
+INSERT [dbo].[AccountRate] ([AccountRateId], [CustomerAccountId], [RatePerHour], [EffectiveStartDate], [EffectiveEndDate]) VALUES (1, 6, CAST(150.00 AS Decimal(6, 2)), CAST(N'2017-06-01 00:00:00.0000000' AS DateTime2), NULL)
+GO
+INSERT [dbo].[AccountRate] ([AccountRateId], [CustomerAccountId], [RatePerHour], [EffectiveStartDate], [EffectiveEndDate]) VALUES (2, 6, CAST(200.00 AS Decimal(6, 2)), CAST(N'2018-03-01 00:00:00.0000000' AS DateTime2), NULL)
+GO
+INSERT [dbo].[AccountRate] ([AccountRateId], [CustomerAccountId], [RatePerHour], [EffectiveStartDate], [EffectiveEndDate]) VALUES (3, 5, CAST(100.00 AS Decimal(6, 2)), CAST(N'2016-03-01 00:00:00.0000000' AS DateTime2), NULL)
+GO
+INSERT [dbo].[AccountRate] ([AccountRateId], [CustomerAccountId], [RatePerHour], [EffectiveStartDate], [EffectiveEndDate]) VALUES (4, 7, CAST(120.00 AS Decimal(6, 2)), CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL)
+GO
+INSERT [dbo].[AccountRate] ([AccountRateId], [CustomerAccountId], [RatePerHour], [EffectiveStartDate], [EffectiveEndDate]) VALUES (5, 8, CAST(100.00 AS Decimal(6, 2)), CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), NULL)
+GO
+SET IDENTITY_INSERT [dbo].[AccountRate] OFF
+GO
+INSERT [dbo].[AspNetRoles] ([Id], [ConcurrencyStamp], [Name], [NormalizedName]) VALUES (N'10724595-07d2-43c8-acc7-586a50ab09b0', N'4a28f3c5-c1cb-481b-989a-d26f9636e90d', N'ADMIN', N'ADMIN')
+GO
+INSERT [dbo].[AspNetRoles] ([Id], [ConcurrencyStamp], [Name], [NormalizedName]) VALUES (N'44ca8293-792a-4aeb-a38c-7ef404fcf779', N'd76328f8-84bf-4b27-a8e0-685d0860ef8d', N'INSTRUCTOR', N'INSTRUCTOR')
+GO
+INSERT [dbo].[AspNetUserRoles] ([UserId], [RoleId]) VALUES (N'ca3fda57-6de3-482d-939e-91b216985a29', N'10724595-07d2-43c8-acc7-586a50ab09b0')
+GO
+INSERT [dbo].[AspNetUserRoles] ([UserId], [RoleId]) VALUES (N'de88bef4-c6f8-467e-b2ad-0b5227b4138c', N'10724595-07d2-43c8-acc7-586a50ab09b0')
+GO
+INSERT [dbo].[AspNetUserRoles] ([UserId], [RoleId]) VALUES (N'0dd7c260-ad56-42ef-a07b-d0b8b4777937', N'44ca8293-792a-4aeb-a38c-7ef404fcf779')
+GO
+INSERT [dbo].[AspNetUserRoles] ([UserId], [RoleId]) VALUES (N'5795eb20-da0a-4d84-b06a-caf36e318943', N'44ca8293-792a-4aeb-a38c-7ef404fcf779')
+GO
+INSERT [dbo].[AspNetUserRoles] ([UserId], [RoleId]) VALUES (N'70e7e9a4-e271-4dd9-8606-4ce021842338', N'44ca8293-792a-4aeb-a38c-7ef404fcf779')
+GO
+INSERT [dbo].[AspNetUserRoles] ([UserId], [RoleId]) VALUES (N'765f77d6-15db-42ea-adc7-97252bd8d4cd', N'44ca8293-792a-4aeb-a38c-7ef404fcf779')
+GO
+INSERT [dbo].[AspNetUserRoles] ([UserId], [RoleId]) VALUES (N'94889bec-8fc7-43c1-a63d-36f506d495c5', N'44ca8293-792a-4aeb-a38c-7ef404fcf779')
+GO
+INSERT [dbo].[AspNetUsers] ([Id], [AccessFailedCount], [ConcurrencyStamp], [Email], [EmailConfirmed], [FullName], [LockoutEnabled], [LockoutEnd], [NormalizedEmail], [NormalizedUserName], [PasswordHash], [PhoneNumber], [PhoneNumberConfirmed], [SecurityStamp], [TwoFactorEnabled], [UserName]) VALUES (N'0dd7c260-ad56-42ef-a07b-d0b8b4777937', 0, N'cdadebb1-a85d-43f9-969a-932a51078d87', N'BEN@HOTINSTRUCTOR.COM', 0, N'BEN', 1, NULL, N'BEN@HOTINSTRUCTOR.COM', N'88885', N'AQAAAAEAACcQAAAAEHrVOnlN7H8ag7ltPvqPTkgLcz1J770+eupQtwNKM241ME0pe1CKkIUdVTZ/4j7G6w==', NULL, 0, N'424a9243-6d40-421f-a234-a43f3412374b', 0, N'88885')
+GO
+INSERT [dbo].[AspNetUsers] ([Id], [AccessFailedCount], [ConcurrencyStamp], [Email], [EmailConfirmed], [FullName], [LockoutEnabled], [LockoutEnd], [NormalizedEmail], [NormalizedUserName], [PasswordHash], [PhoneNumber], [PhoneNumberConfirmed], [SecurityStamp], [TwoFactorEnabled], [UserName]) VALUES (N'5795eb20-da0a-4d84-b06a-caf36e318943', 0, N'59f589a5-069d-4dd1-a6ed-e94d60cc9997', N'RANDY@HOTINSTRUCTOR.COM', 0, N'RANDY', 1, NULL, N'RANDY@HOTINSTRUCTOR.COM', N'88883', N'AQAAAAEAACcQAAAAECMqVsXarwxXzMVkW/J10p1In7f3xgvmaG2Z9BVVaD/TOK/GAgvh0F0g5ZeXV3q7Ag==', NULL, 0, N'b5d72281-32c6-433e-9f4b-173489e5bd84', 0, N'88883')
+GO
+INSERT [dbo].[AspNetUsers] ([Id], [AccessFailedCount], [ConcurrencyStamp], [Email], [EmailConfirmed], [FullName], [LockoutEnabled], [LockoutEnd], [NormalizedEmail], [NormalizedUserName], [PasswordHash], [PhoneNumber], [PhoneNumberConfirmed], [SecurityStamp], [TwoFactorEnabled], [UserName]) VALUES (N'70e7e9a4-e271-4dd9-8606-4ce021842338', 0, N'53435003-3e58-475d-9aaa-45f0572f22aa', N'THOMAS@HOTINSTRUCTOR.COM', 0, N'THOMAS', 1, NULL, N'THOMAS@HOTINSTRUCTOR.COM', N'88884', N'AQAAAAEAACcQAAAAEPOLUeGMn6BcqqYqM74mUp+uADQ/2Duk8OYITn1kJBhE0th+epkoPvI/ZeSFqkWieQ==', NULL, 0, N'38b5cfaa-6ea2-4725-8aad-1e74a15c1bef', 0, N'88884')
+GO
+INSERT [dbo].[AspNetUsers] ([Id], [AccessFailedCount], [ConcurrencyStamp], [Email], [EmailConfirmed], [FullName], [LockoutEnabled], [LockoutEnd], [NormalizedEmail], [NormalizedUserName], [PasswordHash], [PhoneNumber], [PhoneNumberConfirmed], [SecurityStamp], [TwoFactorEnabled], [UserName]) VALUES (N'765f77d6-15db-42ea-adc7-97252bd8d4cd', 0, N'6d810329-d450-480e-b941-4947c1a17024', N'FRED@HOTINSTRUCTOR.COM', 0, N'FRED', 1, NULL, N'FRED@HOTINSTRUCTOR.COM', N'88887', N'AQAAAAEAACcQAAAAECs7ZO3T/qyNs08xGVyS12J2Im/Gxt8K+YJoDK7pi7MX8EtppPhRRxz2yqbuqONvsQ==', NULL, 0, N'b3341f55-68bf-455c-bb7b-9dd084b44138', 0, N'88887')
+GO
+INSERT [dbo].[AspNetUsers] ([Id], [AccessFailedCount], [ConcurrencyStamp], [Email], [EmailConfirmed], [FullName], [LockoutEnabled], [LockoutEnd], [NormalizedEmail], [NormalizedUserName], [PasswordHash], [PhoneNumber], [PhoneNumberConfirmed], [SecurityStamp], [TwoFactorEnabled], [UserName]) VALUES (N'94889bec-8fc7-43c1-a63d-36f506d495c5', 0, N'f023c1eb-8b98-413c-a5e4-e295523dec7c', N'GABRIEL@HOTINSTRUCTOR.COM', 0, N'GABRIEL', 1, NULL, N'GABRIEL@HOTINSTRUCTOR.COM', N'88886', N'AQAAAAEAACcQAAAAEAAqg3ej7T/WQzUl6igIBY3gHDKPNof84YmC0EsC+zbj5l4lp7xkqSBz9LKq4cdQUA==', NULL, 0, N'98a8370c-5a25-406a-a2cd-88279e50aac1', 0, N'88886')
+GO
+INSERT [dbo].[AspNetUsers] ([Id], [AccessFailedCount], [ConcurrencyStamp], [Email], [EmailConfirmed], [FullName], [LockoutEnabled], [LockoutEnd], [NormalizedEmail], [NormalizedUserName], [PasswordHash], [PhoneNumber], [PhoneNumberConfirmed], [SecurityStamp], [TwoFactorEnabled], [UserName]) VALUES (N'ca3fda57-6de3-482d-939e-91b216985a29', 0, N'66217596-e849-4118-9ccc-d7737bcf51d6', N'JULIET@FAIRYSCHOOL.COM', 0, N'JULIET', 1, NULL, N'JULIET@FAIRYSCHOOL.COM', N'88882', N'AQAAAAEAACcQAAAAEHFQYVq/wGLqc+wbe7NLyXiuKzEfTbB/R8G3E2CZspnka8GvMEvxz0oBmjZH2Ne3mw==', NULL, 0, N'9e4a36c2-6f58-41fa-83f1-63b85845d8a6', 0, N'88882')
+GO
+INSERT [dbo].[AspNetUsers] ([Id], [AccessFailedCount], [ConcurrencyStamp], [Email], [EmailConfirmed], [FullName], [LockoutEnabled], [LockoutEnd], [NormalizedEmail], [NormalizedUserName], [PasswordHash], [PhoneNumber], [PhoneNumberConfirmed], [SecurityStamp], [TwoFactorEnabled], [UserName]) VALUES (N'de88bef4-c6f8-467e-b2ad-0b5227b4138c', 0, N'6dbc7db1-64ec-4d36-813c-554aefff4c5f', N'KENNY@FAIRYSCHOOL.COM', 0, N'KENNY', 1, NULL, N'KENNY@FAIRYSCHOOL.COM', N'88881', N'AQAAAAEAACcQAAAAEDzY2IeoWj45CTE9EvEJchjZNLwxJCuWMra1sDbiDIEEOuoK5X/MujAmAEyuyVc9Eg==', NULL, 0, N'd795a98f-558b-42a0-aceb-1ed1833c7bf1', 0, N'88881')
+GO
+SET IDENTITY_INSERT [dbo].[CustomerAccount] ON 
+
+GO
+INSERT [dbo].[CustomerAccount] ([CustomerAccountId], [AccountName], [Comments], [IsVisible], [CreatedById], [CreatedAt], [UpdatedById], [UpdatedAt]) VALUES (5, N'SCHOOL A', N'Weekly one lesson (Saturday) on dancing foundations (3 hours each week).', 1, 1, CAST(N'2017-01-01 15:40:15.5030000' AS DateTime2), 1, CAST(N'2017-05-22 21:35:52.8339633' AS DateTime2))
+GO
+INSERT [dbo].[CustomerAccount] ([CustomerAccountId], [AccountName], [Comments], [IsVisible], [CreatedById], [CreatedAt], [UpdatedById], [UpdatedAt]) VALUES (6, N'SCHOOL B', N'Weekly two lessons (total 5 hours) dancing gym sessions', 1, 2, CAST(N'2017-03-20 15:40:15.5030000' AS DateTime2), 1, CAST(N'2017-05-22 20:44:30.9267293' AS DateTime2))
+GO
+INSERT [dbo].[CustomerAccount] ([CustomerAccountId], [AccountName], [Comments], [IsVisible], [CreatedById], [CreatedAt], [UpdatedById], [UpdatedAt]) VALUES (7, N'SCHOOL C', N'Weekly two lessons (total 4 hours) dancing lessons', 1, 2, CAST(N'2017-04-14 15:40:15.5030000' AS DateTime2), 2, CAST(N'2017-05-28 12:55:44.2593827' AS DateTime2))
+GO
+INSERT [dbo].[CustomerAccount] ([CustomerAccountId], [AccountName], [Comments], [IsVisible], [CreatedById], [CreatedAt], [UpdatedById], [UpdatedAt]) VALUES (8, N'SCHOOL D', N'Many lessons to be conducted every week day (MON to SAT)', 1, 2, CAST(N'2017-04-01 15:40:15.5030000' AS DateTime2), 1, CAST(N'2017-04-12 21:00:23.3199716' AS DateTime2))
+GO
+SET IDENTITY_INSERT [dbo].[CustomerAccount] OFF
+GO
+SET IDENTITY_INSERT [dbo].[InstructorAccount] ON 
+
+GO
+INSERT [dbo].[InstructorAccount] ([InstructorAccountId], [InstructorId], [WageRate], [Comments], [CustomerAccountId], [EffectiveStartDate], [EffectiveEndDate], [IsCurrent]) VALUES (4, 3, CAST(70.00 AS Decimal(5, 2)), NULL, 5, CAST(N'2017-03-01 00:00:00.0000000' AS DateTime2), NULL, 1)
+GO
+SET IDENTITY_INSERT [dbo].[InstructorAccount] OFF
+GO
+SET IDENTITY_INSERT [dbo].[SessionSynopsis] ON 
+
+GO
+INSERT [dbo].[SessionSynopsis] ([SessionSynopsisId], [SessionSynopsisName], [CreatedById], [UpdatedById], [IsVisible]) VALUES (1, N'Training', 2, 2, 1)
+GO
+INSERT [dbo].[SessionSynopsis] ([SessionSynopsisId], [SessionSynopsisName], [CreatedById], [UpdatedById], [IsVisible]) VALUES (2, N'Training & Rehearsal', 2, 2, 1)
+GO
+INSERT [dbo].[SessionSynopsis] ([SessionSynopsisId], [SessionSynopsisName], [CreatedById], [UpdatedById], [IsVisible]) VALUES (3, N'Rehearsal', 2, 2, 1)
+GO
+INSERT [dbo].[SessionSynopsis] ([SessionSynopsisId], [SessionSynopsisName], [CreatedById], [UpdatedById], [IsVisible]) VALUES (4, N'Rehearsal & performance', 2, 2, 1)
+GO
+INSERT [dbo].[SessionSynopsis] ([SessionSynopsisId], [SessionSynopsisName], [CreatedById], [UpdatedById], [IsVisible]) VALUES (5, N'Performance', 2, 2, 1)
+GO
+SET IDENTITY_INSERT [dbo].[SessionSynopsis] OFF
+GO
+SET IDENTITY_INSERT [dbo].[TimeSheet] ON 
+
+GO
+INSERT [dbo].[TimeSheet] ([TimeSheetId], [InstructorId], [ApprovedById], [ApprovedAt], [CreatedAt], [CreatedById], [VerifiedAndSubmittedAt], [MonthAndYear], [UpdatedAt], [UpdatedById]) VALUES (1, 3, NULL, NULL, CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2), 3, NULL, CAST(N'2017-06-01 00:00:00.0000000' AS DateTime2), CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2), 3)
+GO
+INSERT [dbo].[TimeSheet] ([TimeSheetId], [InstructorId], [ApprovedById], [ApprovedAt], [CreatedAt], [CreatedById], [VerifiedAndSubmittedAt], [MonthAndYear], [UpdatedAt], [UpdatedById]) VALUES (3, 4, NULL, NULL, CAST(N'2017-03-04 22:15:00.0000000' AS DateTime2), 4, NULL, CAST(N'2017-03-01 00:00:00.0000000' AS DateTime2), CAST(N'2017-03-04 22:15:00.0000000' AS DateTime2), 3)
+GO
+INSERT [dbo].[TimeSheet] ([TimeSheetId], [InstructorId], [ApprovedById], [ApprovedAt], [CreatedAt], [CreatedById], [VerifiedAndSubmittedAt], [MonthAndYear], [UpdatedAt], [UpdatedById]) VALUES (4, 4, NULL, NULL, CAST(N'2017-04-01 22:15:00.0000000' AS DateTime2), 4, NULL, CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2), CAST(N'2017-04-01 22:15:00.0000000' AS DateTime2), 3)
+GO
+INSERT [dbo].[TimeSheet] ([TimeSheetId], [InstructorId], [ApprovedById], [ApprovedAt], [CreatedAt], [CreatedById], [VerifiedAndSubmittedAt], [MonthAndYear], [UpdatedAt], [UpdatedById]) VALUES (6, 5, NULL, NULL, CAST(N'2017-05-06 00:00:00.0000000' AS DateTime2), 5, NULL, CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), CAST(N'2017-05-06 00:00:00.0000000' AS DateTime2), 5)
+GO
+SET IDENTITY_INSERT [dbo].[TimeSheet] OFF
+GO
+SET IDENTITY_INSERT [dbo].[TimeSheetDetail] ON 
+
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (1, 1, CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2), CAST(80.00 AS Decimal(6, 2)), CAST(150.00 AS Decimal(6, 2)), 0, 600, 720, N'Training, Training & Rehearsal', 585, 735, N'SCHOOL B', N'system', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2), N'RANDY', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (3, 1, CAST(N'2017-06-07 00:00:00.0000000' AS DateTime2), CAST(80.00 AS Decimal(6, 2)), CAST(150.00 AS Decimal(6, 2)), 0, 540, 720, N'Training', 540, 735, N'SCHOOL B', N'system', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2), N'RANDY', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (4, 1, CAST(N'2017-06-11 00:00:00.0000000' AS DateTime2), CAST(80.00 AS Decimal(6, 2)), CAST(150.00 AS Decimal(6, 2)), 0, 600, 720, N'Training', 585, 735, N'SCHOOL B', N'system', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2), N'RANDY', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (5, 1, CAST(N'2017-06-14 00:00:00.0000000' AS DateTime2), CAST(80.00 AS Decimal(6, 2)), CAST(150.00 AS Decimal(6, 2)), 0, 540, 720, N'Training, Rehearsal & performance', 525, 735, N'SCHOOL B', N'system', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2), N'RANDY', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (7, 1, CAST(N'2017-06-18 00:00:00.0000000' AS DateTime2), CAST(80.00 AS Decimal(6, 2)), CAST(150.00 AS Decimal(6, 2)), 0, 600, 720, N'Training', 585, 750, N'SCHOOL B', N'system', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2), N'RANDY', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (9, 1, CAST(N'2017-06-21 00:00:00.0000000' AS DateTime2), CAST(80.00 AS Decimal(6, 2)), CAST(150.00 AS Decimal(6, 2)), 0, 540, 720, N'Training', 555, 735, N'SCHOOL B', N'system', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2), N'RANDY', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (11, 1, CAST(N'2017-06-25 00:00:00.0000000' AS DateTime2), CAST(80.00 AS Decimal(6, 2)), CAST(150.00 AS Decimal(6, 2)), 0, 600, 720, N'Training', 585, 720, N'SCHOOL B', N'system', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2), N'RANDY', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (12, 1, CAST(N'2017-06-28 00:00:00.0000000' AS DateTime2), CAST(80.00 AS Decimal(6, 2)), CAST(150.00 AS Decimal(6, 2)), 0, 540, 720, N'Training', 525, 735, N'SCHOOL B', N'system', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2), N'RANDY', CAST(N'2017-06-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (19, 3, CAST(N'2017-03-04 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(100.00 AS Decimal(6, 2)), 0, 1140, 1320, N'Training, Rehearsal & performance', 1155, 1350, N'SCHOOL A', N'system', CAST(N'2017-03-04 00:00:00.0000000' AS DateTime2), N'THOMAS', CAST(N'2017-03-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (20, 3, CAST(N'2017-03-11 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(100.00 AS Decimal(6, 2)), 0, 1140, 1320, N'Training', 1125, 1350, N'SCHOOL A', N'system', CAST(N'2017-03-04 00:00:00.0000000' AS DateTime2), N'THOMAS', CAST(N'2017-03-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (21, 3, CAST(N'2017-03-18 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(100.00 AS Decimal(6, 2)), 0, 1140, 1320, N'Training', 1125, 1320, N'SCHOOL A', N'system', CAST(N'2017-03-04 00:00:00.0000000' AS DateTime2), N'THOMAS', CAST(N'2017-03-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (22, 3, CAST(N'2017-03-25 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(100.00 AS Decimal(6, 2)), 0, 1140, 1320, N'Training, Rehearsal & performance', 1125, 1320, N'SCHOOL A', N'system', CAST(N'2017-03-04 00:00:00.0000000' AS DateTime2), N'THOMAS', CAST(N'2017-03-04 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (23, 4, CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(100.00 AS Decimal(6, 2)), 0, 1140, 1320, N'Training, Rehearsal & performance', 1155, 1350, N'SCHOOL A', N'system', CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2), N'THOMAS', CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (24, 4, CAST(N'2017-04-08 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(100.00 AS Decimal(6, 2)), 0, 1140, 1320, N'Training', 1125, 1350, N'SCHOOL A', N'system', CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2), N'THOMAS', CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (25, 4, CAST(N'2017-04-15 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(100.00 AS Decimal(6, 2)), 0, 1140, 1320, N'Rehearsal', 1125, 1320, N'SCHOOL A', N'system', CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2), N'THOMAS', CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (26, 4, CAST(N'2017-04-22 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(100.00 AS Decimal(6, 2)), 0, 1140, 1320, N'Training, Rehearsal & performance', 1125, 1320, N'SCHOOL A', N'system', CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2), N'THOMAS', CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (27, 4, CAST(N'2017-04-29 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(100.00 AS Decimal(6, 2)), 0, 1140, 1320, N'Rehearsal', 1155, 1320, N'SCHOOL A', N'system', CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2), N'THOMAS', CAST(N'2017-04-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (31, 6, CAST(N'0217-05-01 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(120.00 AS Decimal(6, 2)), 0, 660, 780, N'Training', 645, 795, N'SCHOOL C', N'system', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), N'BEN', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (32, 6, CAST(N'0217-05-06 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(120.00 AS Decimal(6, 2)), 0, 600, 720, N'Training', 615, 735, N'SCHOOL C', N'system', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), N'BEN', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (33, 6, CAST(N'0217-05-08 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(120.00 AS Decimal(6, 2)), 0, 660, 780, N'Training', 645, 765, N'SCHOOL C', N'system', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), N'BEN', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (34, 6, CAST(N'0217-05-13 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(120.00 AS Decimal(6, 2)), 0, 600, 720, N'Training', 600, 720, N'SCHOOL C', N'system', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), N'BEN', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (35, 6, CAST(N'0217-05-15 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(120.00 AS Decimal(6, 2)), 0, 660, 780, N'Training', 675, 780, N'SCHOOL C', N'system', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), N'BEN', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (36, 6, CAST(N'0217-05-20 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(120.00 AS Decimal(6, 2)), 0, 600, 720, N'Training', 600, 720, N'SCHOOL C', N'system', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), N'BEN', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (37, 6, CAST(N'0217-05-22 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(120.00 AS Decimal(6, 2)), 0, 660, 780, N'Training', 645, 795, N'SCHOOL C', N'system', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), N'BEN', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (38, 6, CAST(N'0217-05-27 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(120.00 AS Decimal(6, 2)), 0, 600, 720, N'Training', 585, 720, N'SCHOOL C', N'system', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), N'BEN', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2))
+GO
+INSERT [dbo].[TimeSheetDetail] ([TimeSheetDetailId], [TimeSheetId], [DateOfLesson], [WageRatePerHour], [RatePerHour], [IsReplacementInstructor], [OfficialTimeInMinutes], [OfficialTimeOutMinutes], [SessionSynopsisNames], [TimeInInMinutes], [TimeOutInMinutes], [AccountName], [CreatedByName], [CreatedAt], [UpdatedByName], [UpdatedAt]) VALUES (39, 6, CAST(N'2017-05-29 00:00:00.0000000' AS DateTime2), CAST(70.00 AS Decimal(6, 2)), CAST(120.00 AS Decimal(6, 2)), 0, 660, 780, N'Training', 660, 810, N'SCHOOL C', N'system', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2), N'BEN', CAST(N'2017-05-01 00:00:00.0000000' AS DateTime2))
+GO
+SET IDENTITY_INSERT [dbo].[TimeSheetDetail] OFF
+GO
+SET IDENTITY_INSERT [dbo].[UserInfo] ON 
+
+GO
+INSERT [dbo].[UserInfo] ([UserInfoId], [LoginUserName], [Email], [FullName], [IsActive]) VALUES (1, N'88881', N'KENNY@FAIRYSCHOOL.COM', N'KENNY', 1)
+GO
+INSERT [dbo].[UserInfo] ([UserInfoId], [LoginUserName], [Email], [FullName], [IsActive]) VALUES (2, N'88882', N'JULIET@FAIRYSCHOOL.COM', N'JULIET', 1)
+GO
+INSERT [dbo].[UserInfo] ([UserInfoId], [LoginUserName], [Email], [FullName], [IsActive]) VALUES (3, N'88883', N'RANDY@HOTINSTRUCTOR.COM', N'RANDY', 1)
+GO
+INSERT [dbo].[UserInfo] ([UserInfoId], [LoginUserName], [Email], [FullName], [IsActive]) VALUES (4, N'88884', N'THOMAS@HOTINSTRUCTOR.COM', N'THOMAS', 1)
+GO
+INSERT [dbo].[UserInfo] ([UserInfoId], [LoginUserName], [Email], [FullName], [IsActive]) VALUES (5, N'88885', N'BEN@HOTINSTRUCTOR.COM', N'BEN', 1)
+GO
+INSERT [dbo].[UserInfo] ([UserInfoId], [LoginUserName], [Email], [FullName], [IsActive]) VALUES (6, N'88886', N'GABRIEL@HOTINSTRUCTOR.COM', N'GABRIEL', 1)
+GO
+INSERT [dbo].[UserInfo] ([UserInfoId], [LoginUserName], [Email], [FullName], [IsActive]) VALUES (7, N'88887', N'FRED@HOTINSTRUCTOR.COM', N'FRED', 1)
+GO
+SET IDENTITY_INSERT [dbo].[UserInfo] OFF
+GO
+ALTER TABLE [dbo].[AccountDetail]  WITH CHECK ADD  CONSTRAINT [FK_AccountDetail_CustomerAccount_CustomerAccountId] FOREIGN KEY([CustomerAccountId])
+REFERENCES [dbo].[CustomerAccount] ([CustomerAccountId])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[AccountDetail] CHECK CONSTRAINT [FK_AccountDetail_CustomerAccount_CustomerAccountId]
+GO
+ALTER TABLE [dbo].[AccountRate]  WITH CHECK ADD  CONSTRAINT [FK_AccountRate_CustomerAccount_CustomerAccountId] FOREIGN KEY([CustomerAccountId])
+REFERENCES [dbo].[CustomerAccount] ([CustomerAccountId])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[AccountRate] CHECK CONSTRAINT [FK_AccountRate_CustomerAccount_CustomerAccountId]
+GO
+ALTER TABLE [dbo].[AspNetRoleClaims]  WITH CHECK ADD  CONSTRAINT [FK_AspNetRoleClaims_AspNetRoles_RoleId] FOREIGN KEY([RoleId])
+REFERENCES [dbo].[AspNetRoles] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[AspNetRoleClaims] CHECK CONSTRAINT [FK_AspNetRoleClaims_AspNetRoles_RoleId]
+GO
+ALTER TABLE [dbo].[AspNetUserClaims]  WITH CHECK ADD  CONSTRAINT [FK_AspNetUserClaims_AspNetUsers_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[AspNetUsers] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[AspNetUserClaims] CHECK CONSTRAINT [FK_AspNetUserClaims_AspNetUsers_UserId]
+GO
+ALTER TABLE [dbo].[AspNetUserLogins]  WITH CHECK ADD  CONSTRAINT [FK_AspNetUserLogins_AspNetUsers_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[AspNetUsers] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[AspNetUserLogins] CHECK CONSTRAINT [FK_AspNetUserLogins_AspNetUsers_UserId]
+GO
+ALTER TABLE [dbo].[AspNetUserRoles]  WITH CHECK ADD  CONSTRAINT [FK_AspNetUserRoles_AspNetRoles_RoleId] FOREIGN KEY([RoleId])
+REFERENCES [dbo].[AspNetRoles] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[AspNetUserRoles] CHECK CONSTRAINT [FK_AspNetUserRoles_AspNetRoles_RoleId]
+GO
+ALTER TABLE [dbo].[AspNetUserRoles]  WITH CHECK ADD  CONSTRAINT [FK_AspNetUserRoles_AspNetUsers_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[AspNetUsers] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[AspNetUserRoles] CHECK CONSTRAINT [FK_AspNetUserRoles_AspNetUsers_UserId]
+GO
+ALTER TABLE [dbo].[CustomerAccount]  WITH CHECK ADD  CONSTRAINT [FK_CustomerAccount_UserInfo_CreatedById] FOREIGN KEY([CreatedById])
+REFERENCES [dbo].[UserInfo] ([UserInfoId])
+GO
+ALTER TABLE [dbo].[CustomerAccount] CHECK CONSTRAINT [FK_CustomerAccount_UserInfo_CreatedById]
+GO
+ALTER TABLE [dbo].[CustomerAccount]  WITH CHECK ADD  CONSTRAINT [FK_CustomerAccount_UserInfo_UpdatedById] FOREIGN KEY([UpdatedById])
+REFERENCES [dbo].[UserInfo] ([UserInfoId])
+GO
+ALTER TABLE [dbo].[CustomerAccount] CHECK CONSTRAINT [FK_CustomerAccount_UserInfo_UpdatedById]
+GO
+ALTER TABLE [dbo].[InstructorAccount]  WITH CHECK ADD  CONSTRAINT [FK_InstructorAccount_CustomerAccount_CustomerAccountId] FOREIGN KEY([CustomerAccountId])
+REFERENCES [dbo].[CustomerAccount] ([CustomerAccountId])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[InstructorAccount] CHECK CONSTRAINT [FK_InstructorAccount_CustomerAccount_CustomerAccountId]
+GO
+ALTER TABLE [dbo].[InstructorAccount]  WITH CHECK ADD  CONSTRAINT [FK_InstructorAccount_UserInfo_InstructorId] FOREIGN KEY([InstructorId])
+REFERENCES [dbo].[UserInfo] ([UserInfoId])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[InstructorAccount] CHECK CONSTRAINT [FK_InstructorAccount_UserInfo_InstructorId]
+GO
+ALTER TABLE [dbo].[SessionSynopsis]  WITH CHECK ADD  CONSTRAINT [FK_SessionSynopsis_UserInfo_CreatedById] FOREIGN KEY([CreatedById])
+REFERENCES [dbo].[UserInfo] ([UserInfoId])
+GO
+ALTER TABLE [dbo].[SessionSynopsis] CHECK CONSTRAINT [FK_SessionSynopsis_UserInfo_CreatedById]
+GO
+ALTER TABLE [dbo].[SessionSynopsis]  WITH CHECK ADD  CONSTRAINT [FK_SessionSynopsis_UserInfo_UpdatedById] FOREIGN KEY([UpdatedById])
+REFERENCES [dbo].[UserInfo] ([UserInfoId])
+GO
+ALTER TABLE [dbo].[SessionSynopsis] CHECK CONSTRAINT [FK_SessionSynopsis_UserInfo_UpdatedById]
+GO
+ALTER TABLE [dbo].[TimeSheetDetail]  WITH CHECK ADD  CONSTRAINT [FK_TimeSheetDetail_TimeSheet_TimeSheetId] FOREIGN KEY([TimeSheetId])
+REFERENCES [dbo].[TimeSheet] ([TimeSheetId])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[TimeSheetDetail] CHECK CONSTRAINT [FK_TimeSheetDetail_TimeSheet_TimeSheetId]
+GO
+ALTER TABLE [dbo].[TimeSheetDetailSignature]  WITH CHECK ADD  CONSTRAINT [FK_TimeSheetDetailSignature_TimeSheetDetail_TimeSheetIDetailId] FOREIGN KEY([TimeSheetIDetailId])
+REFERENCES [dbo].[TimeSheetDetail] ([TimeSheetDetailId])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[TimeSheetDetailSignature] CHECK CONSTRAINT [FK_TimeSheetDetailSignature_TimeSheetDetail_TimeSheetIDetailId]
+GO

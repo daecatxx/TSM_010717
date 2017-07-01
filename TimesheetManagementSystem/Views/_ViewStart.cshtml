@@ -1,0 +1,11 @@
+﻿@{ 
+		Layout = "_Layout";
+		if (User.IsInRole("ADMIN") || User.IsInRole("MASTER"))
+		{
+				Layout = "_Layout_Admin";
+		}
+		if (User.IsInRole("INSTRUCTOR"))
+		{
+				Layout = "_Layout_Instructor";
+		}
+}

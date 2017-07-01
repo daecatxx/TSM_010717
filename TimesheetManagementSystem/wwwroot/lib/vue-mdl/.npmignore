@@ -1,0 +1,7 @@
+build
+coverage
+test
+circle.yml
+logo.png
+selenium-debug.log
+.*

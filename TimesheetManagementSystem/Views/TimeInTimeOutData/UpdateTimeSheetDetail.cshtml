@@ -1,0 +1,166 @@
+﻿<div class="col-md-offset-2 col-md-8" id="timeInTimeOutControlPanel">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <div class="panel-title"><h3>Providing time-in time-out for <u>{{moment(timeSheetDetailData.dateOfLesson).format("DD/MM/YYYY dddd")}}</u> at {{timeSheetDetailData.customerAccountName}} from {{timeSheetDetailData.officialTimeInHHMM}} to {{timeSheetDetailData.officialTimeOutHHMM}}</h3></div>
+        </div>
+        <div class="panel-body">
+            <form id="dataForm" name="dataForm" role="form" class="form-horizontal">
+
+                <div class="form-group">
+                    <label class="control-label col-md-3" for="startTimeInput">Start time</label>
+                    <div class="col-md-4">
+                        <div class="input-group bootstrap-timepicker timepicker">
+                            <input id="startTimeInput" name="startTimeInput" v-model="actualTimeInHHMM" type="text" class="form-control input-lg">
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-3" for="endTimeInput">End time</label>
+                    <div class="col-md-4">
+                        <div class="input-group bootstrap-timepicker timepicker">
+                            <input id="endTimeInput" name="endTimeInput" v-model="actualTimeOutHHMM" type="text" class="form-control input-lg">
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-md-12">
+                    <label class="control-label col-md-1"></label>
+                    <div class="col-md-10">
+                        <div class="pull-right">
+                            <input type="button" class="btn btn-primary" value="Save" @@click.prevent="updateTimeSheetDetail" id="saveButton" />
+                            <a id="goToManageAccountDetailLink" class="btn btn-default" asp-action="ManageTimeInTimeOutData" asp-controler="TimeInTimeOutData">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div><!-- end of div element which has the class="panel-body" -->
+    </div><!-- end of the div element which has the class="panel" -->
+</div><!-- end of the div element which has class="col-md-offset-2 col-md-8" -->
+
+@section scripts{
+    <!-- Material Design fonts -->
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="~/lib/bootstrap-material-design/dist/css/bootstrap-material-design.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-material-design/dist/css/ripples.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="~/lib/bootstrap-timepicker/css/timepicker.css" />
+    <script src="~/lib/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="~/lib/bootstrap-material-design/dist/js/material.js"></script>
+    <script src="~/lib/bootstrap-material-design/dist/js/ripples.js"></script>
+
+    <script>
+        window.timeSheetDetailId = getIdFromAddressBar();
+        //Reference: http://fezvrasta.github.io/bootstrap-material-design/#getting-started
+        $.material.init(); //Surprisingly, I need to place this command here so that it can work.
+        function getIdFromAddressBar() {
+            var urlArray = window.location.href.split('/');
+            var id = urlArray[urlArray.length - 1];
+            return id;
+        };
+        var vm = new Vue({
+            el: '#timeInTimeOutControlPanel',
+            data: {
+                timeSheetDetailData: { timeSheetDetailId: '', dateOfLesson: '', customerAccountName: '', officialTimeInHHMM: '', officialTimeOutHHMM: '', },
+                moment: moment,
+                actualTimeInHHMM: '',
+                actualTimeOutHHMM: ''
+            },
+            mounted() {
+                this.loadOneTimeSheetDetailData();
+
+
+
+
+            },
+            computed: {
+            },
+            watch: {
+
+            },
+            methods: {
+                updateTimeSheetDetail: function () {
+                    var that = this;
+                    console.log('Save button is clicked');
+                    $saveDataHandler = jQuery.ajax({
+                        type: 'PUT',
+                        url: '/API/TimeInTimeOutData/UpdateTimeInTimeOutData',
+                        dataType: 'json',
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                        },
+                        data: /*function(mins)*/{
+                            actualTimeIn: $("#startTimeInput").val(),
+                            actualTimeOut: $("#endTimeInput").val(),
+                            timeSheetDetailId: that.$root._data.timeSheetDetailData.timeSheetDetailId
+                        },
+                        contentType: 'application/x-www-form-urlencoded',
+                    });//end of jQuery.ajax() method call
+                    $saveDataHandler.done(function (data, textStatus, jqXHR) {
+                        new Noty({ text: data.message, type: 'success', layout: 'center' }).show();
+                    });//end of saveDataHandler.done(...)
+                },
+                getWeekDayName: function (inWeedDayNumber) {
+                    var dayNameList = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+                        'Saturday'];
+                    console.log(dayNameList[inWeedDayNumber]);
+                    return dayNameList[inWeedDayNumber];
+                },
+                getTimeFromMins: function (mins) {
+                    //https://stackoverflow.com/questions/36035598/how-to-convert-minutes-to-hours-using-moment-js
+                    // Do not include the first validation check if you want, for example,
+                    // getTimeFromMins(1530) to equal getTimeFromMins(90) (i.e. mins rollover)
+                    if (mins >= 24 * 60 || mins < 0) {
+                        throw new RangeError("Valid input should be greater than or equal to 0 and less than 1440.");
+                    }
+                    var h = mins / 60 | 0,
+                        m = mins % 60 | 0;
+                    return moment.utc().hours(h).minutes(m).format("hh:mm A");
+                },
+                loadOneTimeSheetDetailData: function () {
+                    var that = this;
+                    $requestTracker = jQuery.ajax({
+                        type: 'GET',
+                        beforeSend: function (xhr) {
+                            xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                        },
+                        url: '/API/TimeInTimeOutData/GetOneTimeSheetDetailData/' + window.timeSheetDetailId,
+                        dataType: 'json',
+                        contentType: 'application/json'
+                    });
+                    $requestTracker.done(function (data) {
+                        console.dir(data);
+                        that.$root._data.timeSheetDetailData = data;
+                        that.$root._data.actualTimeInHHMM = data.actualTimeInHHMM;
+                        that.$root._data.actualTimeOutHHMM = data.actualTimeOutHHMM;
+
+                    });
+
+                }
+            }
+        });
+        $('#startTimeInput').timepicker({
+            minuteStep: 15,
+            secondStep: 59,
+            showInputs: false,
+            disableFocus: true,
+            template: 'dropdown',
+            modalBackdrop: true,
+            showSeconds: false,
+            showMeridian: true
+        });
+        $('#endTimeInput').timepicker({
+            minuteStep: 15,
+            secondStep: 59,
+            showInputs: false,
+            disableFocus: true,
+            template: 'dropdown',
+            modalBackdrop: true,
+            showSeconds: false,
+            showMeridian: true
+        });
+    </script>
+
+}

@@ -1,0 +1,411 @@
+﻿@*<h1>Create Timesheet Detail for replacement </h1>*@
+
+@*<div> <label> TimeSheet for Replacement Lesson</label></div>*@
+<style>
+    .noty_body {
+        margin: 0px auto;
+        text-align: center;
+    }
+</style>
+
+<div class="container">
+    <div class="col-md-offset-2 col-md-8">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="panel-title"><h3> Create Timesheet for replacement lesson<span style="text-decoration:underline;" id="accountNameTextBlock"></span></h3></div>
+            </div>
+            <div class="panel-body">
+                <form id="dataForm" name="dataForm" role="form" class="form-horizontal">
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="accountNameInput">Account Name</label>
+
+                        <div class="col-md-6">
+                            <select id="accountNameInput" class="form-control input-group-sm">
+                                @*<option >Select the Account name </option>*@
+                                @*<option>School A </option>
+                                    <option>School B</option>
+                                    <option>School C</option>
+                                    <option>School D</option>
+                                    <option>School E</option>*@
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    @*<div class="form-group">
+                            <label class="control-label col-md-2 " for="dateOfLessonInput">Lesson start time</label>
+                            <div class="col-md-2">
+                                <div class="input-group bootstrap-timepicker timepicker">
+                                    <input id="dateOfLessonInput" name="dateOfLessonInput" type="text" class="form-control input-lg">
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                            </div>
+                        </div>*@
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="dateOfLessonInput">Date Of Lesson</label>
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <div class="input-group input-append date" id="dateOfLessonDateDatePicker">
+                                    <input type="text" class="form-control input-lg startDate  " id="dateOfLessonInput" name="dateOfLessonInput" />
+                                    <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @*<div class="form-group">
+                            <label class="control-label col-md-2" for="officialtimeInInput"> Official Lesson Start Time </label>
+                            <div class="col-md-2">
+                                <div class="input-group bootstrap-timepicker timepicker">
+                                    <input id="officialtimeInInput" name="OfficaltimeInInput" type="text" class="form-control input-lg">
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+                                </div>
+                            </div>
+                        </div>*@
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="officialtimeInInput">Official Lesson Start Time</label>
+                        <div class="col-md-5">
+                            <div class="input-group bootstrap-timepicker timepicker">
+
+                                <input type="text" class="form-control input-lg   " id="officialtimeInInput" name="officialtimeInInput" />
+                                <span class="input-group-addon add-on"><span class="glyphicon glyphicon-time"></span></span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    @*<div class="form-group">
+                            <label class="control-label col-md-2" for="officialtimeOutInput"> Official Lesson End Time </label>
+                            <div class="col-md-2">
+                                <div class="input-group bootstrap-timepicker timepicker">
+                                    <input id="officialtimeOutInput" name="officaltimeOutInput" type="text" class="form-control input-lg">
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                                </div>
+                            </div>
+                        </div>*@
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="officialtimeOutInput">Official Lesson End Time</label>
+                        <div class="col-md-5">
+                            <div class="input-group bootstrap-timepicker timepicker">
+
+                                <input type="text" class="form-control input-lg startDate  " id="officialtimeOutInput" name="officialtimeOutInput" />
+                                <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    @*<div class="form-group">
+                            <label class="control-label col-md-2" for="wageRateInput"> Wage Rate</label>
+                            <div class="col-md-2">
+
+                                <input class="form-control input-sm" id="wageRateInput" type="text">
+                            </div>
+                        </div>*@
+
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="wageRateInput">Wage Rate</label>
+                        <div class="col-md-6">
+                            <input id="wageRateInput" name="wageRateInput" type="text" class="form-control input-20">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="ratePerHourInput"> Rate Per Hour</label>
+                        <div class="col-md-6">
+                            <input class="form-control input-20" id="ratePerHourInput" type="text">
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="sessionSynopsisNamesInput">Session</label>
+
+                        <div class="col-md-6">
+                            <select id="sessionSynopsisNamesInput" class="form-control input-group-sm" multiple="multiple">
+
+                                @*<option>Training</option>
+                                    <option>Performance</option>
+                                    <option>Training And Performance</option>
+                                    <option>Rehearsal</option>
+                                    <option>Rehearsal and Performance</option>*@
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="replacementInput">Replacement</label>
+                        <div class="col-md-6">
+                            <div class="make-switch" data-on="primary" data-off="info">
+                                <input type="checkbox" id="replacementInput" name="replacementInput" checked>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <input type="button" class="btn btn-primary" value="Save" id="saveButton" />
+
+
+
+
+                </form>
+            </div>
+        </div><!-- end of the div element which has the class="panel" -->
+    </div><!-- end of the div element which has class="col-md-offset-2 col-md-8" -->
+</div>
+@section Scripts{
+    <link href="~/lib/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="~/lib/bootstrap-timepicker/css/timepicker.css" />
+    <link href="~/lib/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-multiselect/dist/css/bootstrap-multiselect.css" rel="stylesheet" />
+
+    <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
+    <script src="~/lib/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
+    <script src="~/lib/bootstrap-switch/dist/js/bootstrap-switch.min.js" type="text/javascript"></script>
+    <script src="~/lib/bootstrap-multiselect/dist/js/bootstrap-multiselect.js"></script>
+
+
+    @*<script  src="js/bootstrap-multiselect.js"></script>
+        <link rel="stylesheet" href="css/bootstrap-multiselect.css" type="text/css" />*@
+    @*<script src="~/lib/jqwidgets/jqxcore.js"></script>
+        <script src="~/lib/jqwidgets/jqx-all.js"></script>
+        <link href="~/lib/jqwidgets/styles/jqx.base.css" rel="stylesheet" />*@
+    <script>
+
+        window.timeSheetId = getIdFromAddressBar();
+        //The following JavaScript function is reused often
+        //to collect id value from the address bar for global scope variable
+        //such as window.studentId, window.companyId,window.courseId etc
+        function getIdFromAddressBar() {
+            var urlArray = window.location.href.split('/');
+            var id = urlArray[urlArray.length - 1];
+            return id;
+        };
+
+        setupCustomerAccountListBox();//Call the JavaScript function to execute
+        function setupCustomerAccountListBox() {
+            var $dataCommunicationTracker = jQuery.ajax({
+                contentType: 'application/json',
+                method: 'get',
+                url: '/API/CustomerAccounts/GetCustomerAccounts',
+            });
+            $dataCommunicationTracker.done(function (data, textStatus, jqXHR) {
+                var $accountNameInputElement = jQuery('#accountNameInput');
+
+                var $optionElement = null;
+
+                for (index = 0; index < data.length; index++) {
+                    oneCustomerAccount = data[index];
+                    $optionElement = jQuery('<option>')
+                        .text(oneCustomerAccount.accountName)
+                        .attr('value', oneCustomerAccount.customerAccountId);
+                    $accountNameInputElement.append($optionElement);
+                }
+            });
+            $dataCommunicationTracker.fail(function (data, textStatus, jqXHR) {
+                console.dir(data);
+                console.dir(textStatus);
+                console.dir(jqXHR);
+            });
+        }
+
+
+
+        //setupSessionListBox();
+
+        //function setupSessionListBox() {
+
+        //    var $loadSessionDataHandler = jQuery.ajax({
+        //        contentType: 'application/json',
+        //        method: 'get',
+        //        url: '/API/SessionSynopses/GetSessionSynopsesForControls',
+
+        //    });
+
+        //    $loadSessionDataHandler.done(function (data, textStatus, jqXHR) {
+        //        console.dir(data);
+        //        $("#sessionSynopsisNamesInput").jqxComboBox({
+        //            source: data, multiSelect: true,
+        //            width: 350, height: 25,
+        //            displayMember: 'sessionSynopsisName',
+        //            valueMember: 'sessionSynopsisId'
+        //        });
+
+        //        $loadSessionDataHandler.fail(function (data, textStatus, jqXHR) {
+
+        //            noty({
+        //                text: data.responseJSON.message,
+        //                type: 'error',
+        //                layout: 'center',
+        //                template: '<div class="noty_message"><span class="noty_text"></span>'
+
+        //            }); //end of noty
+        //        });
+
+
+
+
+        //    });
+        //}
+
+        //$(document).ready(function () {
+
+        //    setupSessionListBox();
+        //});
+
+
+
+
+        $('#dateOfLessonDateDatePicker')
+            .datepicker({
+                format: 'dd/mm/yyyy'
+            })
+            .on('changeDate', function (e) {
+
+            });
+
+        $('#officialtimeInInput').timepicker();
+
+        $('#officialtimeOutInput').timepicker();
+
+        //$('#timeInInput').timepicker();
+
+        //$('#timeOutInput').timepicker();
+
+        $("[id='replacementInput']").bootstrapSwitch();
+
+        // $('#sessionSynopsisNamesInput').multiselect();
+        //$('#sessionSynopsisNamesInput').multiselect()
+        //$("#sessionSynopsisNamesInput").on('change', function (event) {
+        //    var items = $("#sessionSynopsisNamesInput").jqxComboBox('getSelectedItems');
+        //    var selectedItems = [];
+        //    $.each(items, function (index) {
+        //        selectedItems.push(this.value);
+        //    });
+
+        //    sessionSynopsisIdArray = selectedItems;
+        //    console.dir(catIdAr);
+
+
+        //});
+
+        setupSessionListBox();//Call the JavaScript function to execute
+        function setupSessionListBox() {
+            var $dataCommunicationTracker = jQuery.ajax({
+                contentType: 'application/json',
+                method: 'get',
+                url: '/API/SessionSynopses/GetSessionSynopsesForControls',
+            });
+
+            $dataCommunicationTracker.done(function (data, textStatus, jqXHR) {
+                $('#sessionSynopsisNamesInput').multiselect({
+                    source: data, multiSelect: true,
+                    width: 350, height: 25,
+                    displayMember: 'sessionSynopsisName',
+                    valueMember: 'sessionSynopsisId'
+                });
+
+
+                var sessionSynopsisList = data;
+                var sessionSynopsisId = '';
+                var sessionSynopsisName = '';
+                var $sessionSynopsisNamesInputElement = null;
+                var $optionElement = null;
+            });
+
+
+        }
+
+        //    $dataCommunicationTracker.done(function (data, textStatus, jqXHR) {
+        //        var $sessionSynopsisNamesInputElement = $('#sessionSynopsisNamesInput');
+        //        var $optionElement = null;
+
+        //        for (index = 0; index < data.length; index++) {
+        //            oneSessionSynopsis = data[index];
+        //            $optionElement = jQuery('<option>')
+        //                .text(o   SneSessionSynopsis.sessionSynopsisName)
+        //                .attr('value', oneSessionSynopsis.sessionSynopsisId);
+        //            $sessionSynopsisNamesInputElement.append($optionElement);
+        //        }
+        //    });
+        //    $dataCommunicationTracker.fail(function (data, textStatus, jqXHR) {
+        //        console.dir(data);
+        //        console.dir(textStatus);
+        //        console.dir(jqXHR);
+        //    });
+        //}//end of setupSessionlist() function
+
+        // $('#accountNameInput').multiselect();
+
+        function WebFormData(inAccountName, inDateOfLesson, inOfficialTimein, inOfficialTimeOut, inWageRate, inRatePerHour, /*inTimeIn, inTimeOut,*/ inSessionSynopsis, inIsReplacementInstructor) {
+            this.accountName = inAccountName;
+            this.dateOfLesson = inDateOfLesson;
+            this.officialTimeIn = inOfficialTimein;
+            this.officialTimeOut = inOfficialTimeOut;
+            this.wageRate = inWageRate;
+            this.ratePerHour = inRatePerHour;
+            //this.timeIn = inTimeIn;
+            //this.timeOut = inTimeOut;
+            this.sessionSynopsisNames = inSessionSynopsis;
+            this.isReplacementInstructor = inIsReplacementInstructor;
+
+        }
+        $('#saveButton').on('click', function () {
+
+            var collectedAccountName = $('#accountNameInput').val();
+            var collectedDateOfLesson = $('#dateOfLessonInput').val();
+            var collectedOfficialTimeIn = $('#officialtimeInInput').val();
+            var collectedOfficialTimeOut = $('#officialtimeOutInput').val();
+            var collectedWageRate = $('#wageRateInput').val();
+            var collectedRatePerHour = $('#ratePerHourInput').val();
+            //var collectedTimeIn = $('#timeInInput').val();
+            //var collectedTimeOut = $('#timeOutInput').val();
+            var collectedSessionSynopsisName = $('#sessionSynopsisNamesInput :selected').text();
+            var collectedIsReplacementInstructor = $('#replacementInput').bootstrapSwitch('state');
+
+
+
+            //Use the object constructor (WebFormData) to construct
+            //an object of information
+
+            var webFormData =
+                new WebFormData(collectedAccountName, collectedDateOfLesson, collectedOfficialTimeIn, collectedOfficialTimeOut, collectedWageRate, collectedRatePerHour,/*collectedTimeIn, collectedTimeOut,*/ collectedSessionSynopsisName, collectedIsReplacementInstructor);
+            $requestTracker = jQuery.ajax({
+                type: 'POST',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                },
+                url: '/API/TimeSheetDetails/CreateTimeSheetDetail',
+                dataType: 'json',
+                data: webFormData,
+                contentType: 'application/x-www-form-urlencoded',
+            })
+            $requestTracker.done(function (data, textStatus, jqXHR) {
+                new Noty({ text: data.message, layout: 'center', type: 'success', closeWith: ['click', 'button'] }).show();
+            });//end of $requestTracker.done()
+            $requestTracker.fail(function (data, textStatus, jqXHR) {
+
+                new Noty({
+                    text: data.responseJSON.message, type: 'error',
+                    layout: 'center',
+                    closeWith: ['click', 'button']
+                }).show();//end of new Noty()
+            });//end of $requestTracker.fail()
+        });//end of $('#saveButton').on('click', anonymous function)
+
+
+
+
+    </script>
+}
+
+

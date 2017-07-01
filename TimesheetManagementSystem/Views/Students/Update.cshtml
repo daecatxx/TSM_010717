@@ -1,0 +1,254 @@
+﻿<div class="container">
+    <div class="col-md-offset-2 col-md-8">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="panel-title">Update Student Record</div>
+            </div>
+            <div class="panel-body">
+                <form id="dataForm" role="form" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="fullNameInput">Full Name</label>
+                        <div class="col-md-4">
+                            <input type="text" id="fullNameInput" class="form-control input-group-sm"
+                                   maxlength="30" placeholder="Full name" value="" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="admissionIdInput">Admission Id</label>
+                        <div class="col-md-7">
+                            <input type="text" id="admissionIdInput" class="form-control input-group-sm"
+                                   placeholder="Admission id" value="" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="emailInput">Email</label>
+                        <div class="col-md-7">
+                            <input type="text" id="emailInput" class="form-control input-group-sm"
+                                   placeholder="Email" value="" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="mobileContactInput">Mobile Contact</label>
+                        <div class="col-md-7">
+                            <input type="text" id="mobileContactInput" class="form-control input-group-sm"
+                                   placeholder="Mobile contact" value="" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="dateOfBirthInput">Date of Birth</label>
+                        <div class="col-md-7">
+                            <input type="text" id="dateOfBirthInput" class="form-control input-group-sm"
+                                   placeholder="Date of Birth" value="" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="courseIdInput">Course</label>
+                        <div class="col-md-9">
+                            <select id="courseIdInput" class="form-control input-group-sm">
+									<option value="0">--Select Course--</option>
+                            </select>
+                        </div>
+                    </div>
+					<div class="form-group col-md-12">
+						<label class="control-label col-md-1"></label>
+						<div class="col-md-10">
+							<div class="pull-right">
+								<input type="button" class="btn btn-danger" value="Delete" id="deleteButton" />
+								<input type="button" class="btn btn-primary" value="Save" id="saveButton" />
+								<a class="btn btn-default" asp-action="Index" asp-controler="Students">Cancel</a>
+							</div>
+						</div>
+					</div>
+                </form>
+            </div><!-- end of div element which has the class="panel-body" -->
+        </div><!-- end of the div element which has the class="panel" -->
+    </div><!-- end of the div element which has class="col-md-offset-2 col-md-8" -->
+</div><!-- end of div element which has the class="container" -->
+
+
+@section Scripts{
+<script>
+//Declare a document scope variable, window.studentId.
+//This variable will contain the numeric student id value
+//which will be extracted from the address bar.
+window.studentId = getIdFromAddressBar();
+setupCourseListBox();
+	//The following JavaScript function is reused often
+	//to collect id value from the address bar for global scope variable
+	//such as window.studentId, window.companyId,window.courseId etc
+
+        function getIdFromAddressBar() {
+         	var urlArray = window.location.href.split('/');
+        	 var id = urlArray[urlArray.length - 1];
+        	 return id;
+        };
+
+        function setupCourseListBox() {
+        	//Note: jQuery.ajax(..) is also often written is $.ajax(..)
+        	var $loadCourseDataHandler = jQuery.ajax({
+        		url: '/Api/Courses/GetCoursesForControls',
+        		method: 'GET',
+        		dataType: 'json',
+        		cache: false,
+        	});
+        	$loadCourseDataHandler.done(function (data, textStatus, jqXHR) {
+        		//After inspecting the data object with the console.log
+        		//I have clear picture of the structure and used
+        		//the following variable, courseList to represent the data
+        		var courseList = data;
+        		var courseId = '';
+        		var courseAbbreviation = '';
+        		var courseName = '';
+        		var $courseIdInputElement = null;
+        		var $optionElement = null;
+
+        		//-------- Find the table element -----------
+        		//I am using the $tableElement variable
+        		//to represent the found HTML element which has a matching id of courseTableBody
+        		$courseIdInputElement = $('#courseIdInput');
+	          
+        		//I want to build option elements so that
+        		//I can display course abbreviation 
+        		//within the drop down list, courseIdInput
+        		//$courseIdInputElement variable is representing the dropdownlist <SELECT> element.
+
+        		//-------- Begin creating <option> HTML element ------
+        		for (index = 0; index < courseList.length; index++) {
+        			//Set this course variable to reference a course object
+        			//inside the courseList Array.
+        			course = courseList[index];
+        			//Copy out the course information
+        			courseId = course.courseId;
+        			courseAbbreviation = course.courseAbbreviation;
+        			courseName = course.courseName;
+
+        			//Create new HTML <option> element.
+        			//At the same time let the $optionElement variable to represent it.
+        			$optionElement = $('<option></option>',{ text: courseAbbreviation });
+        			$optionElement.attr('value', courseId);
+        			$courseIdInputElement.append($optionElement);
+        		}//end of for loop.
+        	}//end of JavaScript anonymous function
+									)//end of the done() method;
+        }//end of setupCourseListBox();
+
+        //Note: jQuery.ajax(..) is also often written is $.ajax(..)
+        $loadStudentHandler = jQuery.ajax({
+            type: 'GET',
+            url: '/API/Students/' + window.studentId,
+        })
+        $loadStudentHandler.done(function (data, textStatus, jqXHR) {
+            //The (data) input parameter automatically captures the response from the
+            //Get API method
+            //I usually use the following code
+            //to inspect the returned result captured by the data input parameter
+            //from the web server.
+            console.log(data);
+
+            //After inspecting the data object with the console.log
+            //I have clear picture of the structure and used
+            //the following variable to reference(represent) the data variable.
+            var student = data;
+            //Copy out the student information
+            var fullName = student.fullName;
+            var mobileContact = student.mobileContact;
+            var email = student.email;
+            var dateOfBirth = moment(new Date(student.dateOfBirth)).format("DD/MM/YYYY");
+            var admissionId = student.admissionId;
+            var courseId = student.course.courseId;
+
+            //Populate the respective input controls with the student details.
+            //For example, find the text input control, fullNameInput and set the text input control
+            //'s value with the fullName variable's content.
+            $('#fullNameInput').val(fullName);
+            $('#mobileContactInput').val(mobileContact);
+            $('#emailInput').val(email);
+            $('#dateOfBirthInput').val(dateOfBirth);
+            $('#admissionIdInput').val(admissionId);
+            $("#courseIdInput").val(courseId);
+        }//end of JavaScript anonymous function
+
+        )//end of the done() method;
+
+        function WebFormData(inFullName, inAdmissionId, inEmail,
+                inMobileContact,inDateOfBirth, inCourseId) {
+            this.fullName = inFullName;
+            this.admissionId = inAdmissionId;
+            this.email = inEmail;
+            this.mobileContact = inMobileContact;
+            this.dateOfBirth = inDateOfBirth;
+            this.courseId = inCourseId;
+        }
+        $('#saveButton').on('click', function () {
+            var collectedFullName = $('#fullNameInput').val();
+            var collectedMobileContact = $('#mobileContactInput').val();
+            var collectedEmail = $('#emailInput').val();
+            var collectedDateOfBirth = $('#dateOfBirthInput').val();
+            var collectedAdmissionId = $('#admissionIdInput').val();
+            var collectedCourseId = $("#courseIdInput").val();
+            console.log(collectedCourseId);
+            var webFormData = new WebFormData(collectedFullName,collectedAdmissionId,
+                  collectedEmail,collectedMobileContact,collectedDateOfBirth,collectedCourseId);
+            var webFormDataInString = JSON.stringify(webFormData);
+
+            $updateStudentHandler = jQuery.ajax({
+                type: 'PUT',
+                url: '/API/Students/' + window.studentId,
+                dataType: 'json',
+                contentType: 'application/json;',
+                data: "'" + webFormDataInString + "'"
+            })
+            $updateStudentHandler.done(function (data, textStatus, jqXHR) {
+                noty({ text: data.message,layout:'center', type:'success'});
+            });
+            $updateStudentHandler.fail(function (data, textStatus, jqXHR) {
+                console.dir(data);
+            	noty({
+                    text: data.responseJSON.message, type: 'error',
+            		layout: 'center',
+            		template: '<div class="noty_message"><span class="noty_text"></span>'
+            	});//end of noty()
+            });
+        });//end of $('#saveButton').on('click', anonymous function) 
+
+        $('#deleteButton').on('click', function () {
+
+        	$deleteStudentHandler = jQuery.ajax({
+        		type: 'DELETE',
+                url: '/API/Students/' + window.studentId
+        	})//end of jQuery.ajax() call
+        	$deleteStudentHandler.done(function (data, textStatus, jqXHR) {
+        		noty({
+        			text: data.message, type: 'success',
+        			layout: 'center',
+        			template: '<div class="noty_message" style="height:90px;"><span class="noty_text"></span>',
+        			buttons: [
+						{
+							addClass: 'btn btn-primary', text: 'Ok', onClick: function ($noty) {
+								$noty.close();
+								$('body').fadeOut(2000, redirectPage);
+							}
+						}
+        			]
+        		});//end of noty()
+        	});//end of $deleteStudentHandler.done()
+
+        	$deleteCompanyHandler.fail(function (data, textStatus, jqXHR) {
+        		console.log(data);
+        		noty({
+        			text: data.responseJSON.Message, type: 'error',
+        			layout: 'center',
+        			template: '<div class="noty_message"><span class="noty_text"></span>'
+        		});//end of noty()
+        	});//end of $deleteStudentHandler.fail()
+
+        });////end of $('#deleteButton').on('click', anonymous function) 
+        function redirectPage() {
+        	location.replace('/Students/Index');
+        }// end of redirectPage() method (function)
+
+</script>
+ }
+
+
+

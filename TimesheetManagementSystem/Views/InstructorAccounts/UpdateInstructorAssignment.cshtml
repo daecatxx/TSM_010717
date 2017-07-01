@@ -1,0 +1,509 @@
+﻿<style>
+    .noty_body {
+        /*width: 400px;*/
+        text-align: center;
+        margin: 0px auto;
+    }
+</style>
+
+<div class="container">
+    <div class="col-md-offset-2 col-md-8">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="panel-title"><h3>Update Instructor Assignment to <span style="text-decoration:underline;" id="accountNameTextBlock"></span></h3></div>
+            </div>
+            <div class="panel-body">
+                <form id="dataForm" name="dataForm" role="form" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="instructorIdInput">Instructor</label>
+                        <div class="col-md-4">
+                            <select id="instructorIdInput" class="form-control input-group-sm">
+                                <option value="0">--SELECT INSTRUCTOR--</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+
+                    @*<div class="form-group">
+                            <label class="control-label col-md-3" for="instructorId">Instructor name</label>
+                            <div class="col-md-6">
+                                <input id="instructorId" name="instructorId" type="text" class="form-control input-lg">
+                            </div>
+                        </div>*@
+
+
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="commentsInput">Comments</label>
+                        <div class="col-md-6">
+                            <input id="commentsInput" name="commentsInput" type="text" class="form-control input-lg">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="wageRateInput">Wage Rate</label>
+                        <div class="col-md-6">
+                            <input id="wageRateInput" name="wageRateInput" type="text" class="form-control input-lg">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="effectiveStartDateInput">Effective start date</label>
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <div class="input-group input-append date" id="effectiveStartDateDatePicker">
+                                    <input type="text" class="form-control input-lg startDate  " id="effectiveStartDateInput" name="effectiveStartDateInput" />
+                                    <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="effectiveEndDateInput">Effective end date</label>
+                        <div class="col-md-7">
+                            <div class="input-group">
+                                <div class="input-group input-append date" id="effectiveEndDateDatePicker">
+                                    <input type="text" class="form-control input-lg endDate" id="effectiveEndDateInput" name="effectiveEndDateInput" />
+                                    <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*<div class="form-group">
+                        <label class="control-label col-md-3" for="isCurrentInput">Is current</label>
+                        <div class="col-md-3">
+                            <div class="make-switch" data-on="primary" data-off="info">
+                                <input type="checkbox" id="isCurrentInput" name="isCurrentInput" checked>
+                            </div>
+                        </div>
+                    </div>*@
+                    <div class="form-group col-md-12">
+                        <label class="control-label col-md-1"></label>
+                        <div class="col-md-10">
+                            <div class="pull-left">
+                                    @*<input type="button" class="btn btn-danger" value="Unassign " id="deleteButton" data-toggle="modal" data-target="#confirm-delete" />*@
+                            </div>
+                            <p>
+                                <div class="pull-right">
+                                    <input type="button" class="btn btn-danger" value="Unassign Instructor" id="deleteButton" data-toggle="modal" data-target="#confirm-delete" />
+                                    <input type="button" class="btn btn-primary" value="Save" id="saveButton" />
+                                    <a class="btn btn-default" href="InstructorAccounts/ManageInstructorAccount/" id="goToManageInstructorAccount">Cancel</a>
+                                </div>
+                            </p>
+                        </div>
+                    </div>
+                </form>
+            </div><!-- end of div element which has the class="panel-body" -->
+        </div><!-- end of the div element which has the class="panel" -->
+    </div><!-- end of the div element which has class="col-md-offset-2 col-md-8" -->
+</div><!-- end of div element which has the class="container" -->
+<!-- End of main div element to contain all
+        the web form interface elements -->
+
+<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Unassign Instructor from <span style="font-weight:bold" class ="accName" id="accountName"></span>
+            </div>
+            <div class="modal-body">
+
+                <b>Unassigning this instructor from account will permanently remove this Instructor's relationship
+                with <span style="font-weight:bold" class="accName"></span> </b>
+                <p>
+                    <div style="width:100%;margin:0 auto;color:red;font-weight:bold;">Continue unassigning Instructor?</div>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <a id="deleteInstructorAssignmentBtn" class="btn btn-danger btn-ok">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+    <link href="~/lib/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+    <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
+    <script src="~/lib/bootstrap-switch/dist/js/bootstrap-switch.min.js" type="text/javascript"></script>
+
+    <script>
+        //unassignInstructor is now constructed in a way whereby can only assign one instructor per sch,
+        //hence i can only unassign one as well... so might need a manage instructor account etc..
+
+        window.instructorAccountId = getIdFromAddressBar();
+        function getIdFromAddressBar() {
+            var full_url = document.URL; // Get current url
+            var url_array = full_url.split('/') // Split the string into an array with / as separator
+            var id = url_array[url_array.length - 1];  // Get the last part of the array (-1)
+            //var id = url.substring(url.lastIndexOf('/') + 1);
+            //var urlArray = window.location.href.split('/');
+            //var id = urlArray[urlArray.length - 1];
+            return id;
+        };
+
+
+        $('#accountNameTextBlock').text(getCustomerAccountNameFromCookie());
+        $('.accName').text(getCustomerAccountNameFromCookie());
+
+        function getCustomerAccountNameFromCookie() {
+            //Obtain the customer account name from the cookie
+            //customer_account_name
+            var customerAccount = Cookies.getJSON('customer_account');
+            return he.decode(customerAccount.accountName);//https://www.w3schools.com/jsref/jsref_decodeuricomponent.asp
+        }
+
+        //$("[id='isCurrentInput']").bootstrapSwitch();
+
+        $('#effectiveStartDateDatePicker')
+            .datepicker({
+                format: 'dd/mm/yyyy'
+            })
+            .on('changeDate', function (e) {
+                // Revalidate the date field
+
+            });
+        $('#effectiveEndDateDatePicker')
+            .datepicker({
+                format: 'dd/mm/yyyy'
+            })
+            .on('changeDate', function (e) {
+                // Revalidate the date field
+            });
+
+        loadOneAssignedInstructorById();
+        setupInstructorListBox();
+        function setupInstructorListBox() {
+
+            var $dataCommunicationTracker = jQuery.ajax({
+                contentType: 'application/json',
+                method: 'get',
+                url: '/Api/UserInfo/GetAllActiveInstructorData',
+            });
+            $dataCommunicationTracker.done(function (data, textStatus, jqXHR) {
+                var $instructorIdInputElement = jQuery('#instructorIdInput');
+                var $optionElement = null;
+                for (index = 0; index < data.length; index++) {
+                    oneInstructor = data[index];
+                    $optionElement = jQuery('<option>')
+                        .text(oneInstructor.fullName)
+                        .attr('value', oneInstructor.instructorId);
+                    $instructorIdInputElement.append($optionElement);
+                }
+            });
+            $dataCommunicationTracker.fail(function (data, textStatus, jqXHR) {
+                console.dir(data);
+                console.dir(textStatus);
+                console.dir(jqXHR);
+            });
+        }//end of setupRoomListBox() function
+
+
+
+        function loadOneAssignedInstructorById() {
+            $requestTracker = jQuery.ajax({
+                //beforeSend: function (xhr) {
+                //    xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                //},
+                url: '/API/InstructorAccounts/GetOneAssignedInstructor/' + window.instructorAccountId,
+                type: 'GET',
+                dataType: 'json',
+                cache: true,
+            });
+            $requestTracker.done(function (data, textStatus, jqXHR) {
+                var oneInstructorAccount = data;
+
+                if (new Date(oneInstructorAccount.effectiveEndDate).getTime() != 0) {
+                    $('#effectiveEndDateDatePicker').datepicker('setDate', new Date(oneInstructorAccount.effectiveEndDate));
+                }
+                $('#effectiveStartDateDatePicker').datepicker('update', new Date(oneInstructorAccount.effectiveStartDate));
+                //$('[id="isCurrentInput"]').bootstrapSwitch('state', oneInstructorAccount.isCurrent);
+
+                $('#commentsInput').val(oneInstructorAccount.comments);
+                $('#wageRateInput').val(oneInstructorAccount.wageRate);
+
+                //displaying on the input box for display purposes
+                //$('#instructorId').val(oneInstructorAccount.instructorId);
+
+                $("#instructorIdInput").val(oneInstructorAccount.instructorId);
+
+
+                //$("#instructorName").val(oneInstructorAccount.instructor.fullName);
+
+                //window.instructorId = oneInstructorAccount.instructorId;
+                window.instructorAccountId = oneInstructorAccount.instructorAccountId;
+                window.customerAccountId = oneInstructorAccount.customerAccountId;
+
+
+                $('#goToManageInstructorAccount').attr('href', '/InstructorAccounts/ManageInstructorAccount/' + window.customerAccountId);
+            });
+        }
+
+
+        // $('#navigationBackToManageCustomerAccount').attr('href', '/CustomerAccounts/ManageCustomerAccount');        // !!!!!!!!!!!!!!!!!!!!!!!!! The cancel button
+        //The following JavaScript function is reused often
+        //to collect id value from the address bar for global scope variable
+        //such as window.accountRateId, window.companyId,window.courseId etc
+        //window.instructorAccountId = getIdFromAddressBar();
+
+        console.dir("A");
+
+        function InstructorAccount(inInstructorAccountId,
+            inCustomerAccountId, inInstructorId, inEffectiveStartDate,
+            inEffectiveEndDate, inComments, inWageRate/*, inIsCurrent*/) {
+
+
+            this.instructorAccountId = inInstructorAccountId,
+            this.customerAccountId = inCustomerAccountId;
+            this.instructorId = inInstructorId,
+            this.effectiveStartDate = inEffectiveStartDate;
+            this.effectiveEndDate = inEffectiveEndDate;
+            this.comments = inComments;
+            this.wageRate = inWageRate;
+            //this.isCurrent = inIsCurrent;
+        }
+        console.dir("abc");
+
+        $('#saveButton').on('click', function () {
+            if ($('#dataForm').valid() == true) {
+                //var collectedCustomerAccountId = $('#inCustomerAccountId').val();
+                var collectedInstructorId = $("instructorIdInput").val();
+                var collectedEffectiveStartDate = $('#effectiveStartDateInput').val();
+                var collectedEffectiveEndDate = $('#effectiveEndDateInput').val();
+                var collectedComments = $("#commentsInput").val();
+                var collectedWageRate = $("#wageRateInput").val();
+                //var collectedIsCurrent = $('#isCurrentInput').bootstrapSwitch('state');
+
+                console.dir("abcd");
+
+                var instructorAccount = new InstructorAccount(
+                    window.instructorAccountId, window.customerAccountId, collectedInstructorId,
+                    collectedEffectiveStartDate, collectedEffectiveEndDate, collectedComments, collectedWageRate
+                    /*,collectedIsCurrent*/);
+
+                $saveDataHandler = jQuery.ajax({
+                    type: 'PUT',
+                    url: '/API/InstructorAccounts/UpdateAssignmentOfInstructorToCustomerAccount/' + window.instructorAccountId,
+                    dataType: 'json',
+                    data: instructorAccount,
+                    contentType: 'application/x-www-form-urlencoded',
+                })
+                $saveDataHandler.done(function (data, textStatus, jqXHR) {
+
+                    var anyAccountDetailRecords = data.anyAccountDetailRecords;
+                    if (anyAccountDetailRecords.anyAccountDetailList.length == 0) {
+                        var resultInHTML = '<div style="margin:0px auto" class="top-center" >' + data.message +
+                            '<br> Warning: There are <b>no AccountDetails</b> made for this Account' + ', Instructor may not be able to generate TimeSheet Data </div>';
+                        /* + data.message + " " + data.anyAccountDetailRecords.message +*/
+
+                        new Noty({
+                            theme: 'bootstrap-v3',
+                            text: resultInHTML,
+                            layout: 'top',
+                            type: 'success',
+                            closeWith: ['click', 'button']
+
+                        }).show();
+                    } else {
+                        new Noty({ theme: 'bootstrap-v3', text: data.message, layout: 'top', type: 'success' }).show();
+                    }
+                });//end of $saveDataHandler.done()
+                $saveDataHandler.fail(function (data, textStatus, jqXHR) {
+                    var infoFromServer = data.responseJSON.message;
+
+
+                    new Noty({
+                        theme: 'bootstrap-v3',
+                        text: infoFromServer, type: 'error',
+                        layout: 'center'
+                    }).show();//end of new Noty()
+                });//end of $saveDataHandler.fail()
+            }
+        });//end of $('#saveButton').on('click', anonymous function)
+
+
+
+
+
+        ////Unassign Instructor button
+        //$("#deleteInstructorAssignmentBtn").on('click', function (e) {
+        //    var $modalDiv = $(e.delegateTarget);
+
+        //    $deleteInstructorAccountDataHandler = $.ajax({
+        //        url: '/API/InstructorAccounts/DeleteInstructorAccount/' + window.instructorAccountId,
+        //        method: 'Delete',
+        //        dataType: 'json',
+        //        cache: true,
+        //    })//end of jQuery.ajax() call
+        //    $modalDiv.addClass('loading');
+
+        //    $deleteInstructorAccountDataHandler.done(function (data, textStatus, jqXHR) {
+        //        $modalDiv.modal('hide').removeClass('loading');
+
+        //        new Noty({
+        //            theme: 'bootstrap-v3',
+        //            text: data.message,
+        //            layout: 'top',
+        //            type: 'success',
+        //            closeWith: ['click', 'button']
+        //        }).show();
+
+        //        window.location.replace('/InstructorAccounts/UpdateInstructorAssignment/' + window.instructorAccountId);
+
+        //    });//end of $deleteInstructorAccountDataHandler.done()
+        //    $deleteInstructorAccountDataHandler.fail(function (data, textStatus, jqXHR) {
+        //        var infoFromServer = data.responseJSON.message;
+        //        new Noty({
+        //            theme: 'bootstrap-v3',
+        //            text: infoFromServer, type: 'error',
+        //            layout: 'top',
+        //            onTemplate: function () {
+        //                this.barDom.innerHTML = '<div class="noty_body">' + this.options.text + '</div>';
+        //                // Important: .noty_body class is required for setText API method.
+        //            }
+        //        }).show();//end of new Noty()
+        //    });//end of $saveDataHandler.fail()
+        //})
+
+
+
+        //-------------------- setup client-side validation logic --------------------------------
+        //http://stackoverflow.com/questions/18754020/bootstrap-3-with-jquery-validation-plugin
+        jQuery.validator.setDefaults({
+            highlight: function (element, errorClass, validClass) {
+                if (element.type === "radio") {
+                    this.findByName(element.name).addClass(errorClass).removeClass(validClass);
+                } else {
+                    $(element).closest('.form-group').removeClass('has-success has-feedback').addClass('has-error has-feedback');
+                    $(element).closest('.form-group').find('i.fa').remove();
+                    $(element).closest('.form-group').append('<i class="fa fa-exclamation fa-lg form-control-feedback"></i>');
+                }
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                if (element.type === "radio") {
+                    this.findByName(element.name).removeClass(errorClass).addClass(validClass);
+                } else {
+                    $(element).closest('.form-group').removeClass('has-error has-feedback').addClass('has-success has-feedback');
+                    $(element).closest('.form-group').find('i.fa').remove();
+                    $(element).closest('.form-group').append('<i class="fa fa-check fa-lg form-control-feedback"></i>');
+                }
+            }
+        });
+        setupFormValidationRules();
+        function setupFormValidationRules() {
+
+            //http://forums.asp.net/t/1671546.aspx?Singapore+mobile+phone+validation
+            jQuery.validator.addMethod('wageRateRule', function (wage_rate, element) {
+                return validateDecimal(wage_rate);
+            }, 'Please specify a valid value. E.g. 100 or 100.50');
+
+            jQuery.validator.addMethod("validDateFormatRule", function (value, element) {
+                //http://stackoverflow.com/questions/23895451/jquery-validate-ignore-custom-validation-rule-if-no-value
+                if (this.optional(element) || value.length == 0) {
+                    return true;
+                }
+                else {
+                    //http://stackoverflow.com/questions/24380305/validate-date-in-dd-mm-yyyy-format-using-jquery-validate
+                    return moment(value, 'DD/MM/YYYY').isValid();
+                }
+            }, 'Please enter a valid date in the format DD/MM/YYYY');
+            jQuery.validator.addMethod("endDateGreaterThanStartDateRule", function (value, element) {
+                // console.log(value);
+                // console.log($('#effectiveStartDateInput').val())
+                //http://stackoverflow.com/questions/23895451/jquery-validate-ignore-custom-validation-rule-if-no-value
+                //https://bhavinrana.wordpress.com/2011/05/14/jquery-validation-end-date-should-be-greater-than-start-date/
+                if (this.optional(element) || value.length == 0) {
+                    return true;
+                }
+                else {
+                    var collectedStartDateValue = $('#effectiveStartDateInput').val();
+                    /* after experimenting for hours, due to the dd/mm/yyyy format, the Date.parse(...) technique
+                    here is not applicable */
+                    //console.log(Date.parse(startDateValue) > Date.parse(value))
+                    // return Date.parse(value) > Date.parse(startDateValue);
+                    //Reference: http://stackoverflow.com/questions/39687278/moment-js-how-to-initialize-from-dd-mm-yyyy-format
+                    var startDate = moment(collectedStartDateValue, 'DD/MM/YYYY');
+                    var endDate = moment(value, 'DD/MM/YYYY');
+                    return endDate.isAfter(startDate, 'day')
+                }
+            }, 'End Date should be greater than Start Date.');
+            $('#dataForm').validate({
+                rules: {
+                    wageRateInput: {
+                        required: true,
+                        wageRateRule: true
+                    },
+                    effectiveStartDateInput: {
+                        required: true,
+                        validDateFormatRule: true
+
+                    },
+                    effectiveEndDateInput: {
+                        required: false,
+                        validDateFormatRule: true,
+                        endDateGreaterThanStartDateRule: true
+                    }
+
+                },
+                messages: {
+                    wageRateInput: {
+                        required: 'Please enter wage rate for instructor'
+                    },
+                    effectiveStartDateInput: 'Please enter start date',
+                },
+                errorPlacement: function (error, element) {
+
+                    if (element.attr('name') == 'effectiveStartDateInput') {
+                        error.appendTo(element.parent('div').parent('div'));
+                    } else if (element.attr('name') == 'effectiveEndDateInput') {
+                        error.appendTo(element.parent('div').parent('div'));
+                    } else {
+                        error.insertAfter(element);
+                    }
+                }
+            });
+        }
+        function validateDecimal(value) {
+            //http://stackoverflow.com/questions/30606348/check-if-a-given-value-is-a-positive-number-or-float-with-maximum-two-decimal-pl
+            var pattern = /^\d+(.\d{1,2})?$/;
+            if (pattern.test(value)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        $('#deleteInstructorAssignmentBtn').on('click', function (e) {
+            //http://stackoverflow.com/questions/8982295/confirm-delete-modal-dialog-with-twitter-bootstrap
+            var $modalDiv = $(e.delegateTarget);
+            // var id = $(this).data('recordId');
+            $deleteInstructorAccountHandler = $.ajax({
+                url: '/api/InstructorAccounts/DeleteInstructorAccount/' + window.instructorAccountId,
+                type: 'DELETE'
+            })
+            // $.post('/api/record/' + id).then()
+            $modalDiv.addClass('loading');
+
+            $deleteInstructorAccountHandler.done(function () {
+                $modalDiv.modal('hide').removeClass('loading');
+                //The following command will redirect the user back to the Manage Account Rates
+                //view interface. The customerAccountId variable value is needed.
+                //If not, the server side Web API which supports the view interface will have error.
+                window.location.replace('/InstructorAccounts/ManageInstructorAccount/' + window.customerAccountId);;
+            })
+            $deleteHandler.fail(function () {
+                $modalDiv.modal('hide').removeClass('loading');
+                new Noty({ text: 'System could not delete the Instructor Account record.', type: 'info' }).show();
+            })
+
+        });
+        //$('#deleteInstructorAssignmentBtn').on('show.bs.modal', function (e) {
+        //    var data = $(e.relatedTarget).data();
+        //    $('.title', this).text(data.recordTitle);
+        //    $('.btn-ok', this).data('recordId', data.recordId);
+        //});
+
+    </script>
+}

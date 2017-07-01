@@ -1,0 +1,202 @@
+﻿<div class="row">
+    <div class="col-md-12">
+        <div class="panel  panel-primary">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    <h3>Manage Rates for <u><span id="accountNameTextBlock"></span></u></h3>
+
+                    <p>&nbsp;</p>
+
+                </div><!-- end of div with class="panel-title" without this one cannot arange the buttons-->
+            </div>
+        </div><!-- ending the div panel here -->
+    </div>
+</div>
+<div class="row">
+    <span style="float:right;margin-bottom:15px;">
+        <a href="/CustomerAccounts/CreateAccountRate" class="btn btn-primary btn-lg" id="addNewRateLink">Add New Rate</a>
+    </span>
+    <div id="no-more-tables">
+        <table id="accountRateTable" class="col-md-12 table-bordered table-striped table-condensed cf table-responsive ">
+            <thead class="cf">
+                <tr>
+                    <th data-field="recordId">#</th>
+                    <th>Actions</th>
+                    <th style="width:10%" data-field="accountName">Rate per hour</th>
+                    <th style="width:18%">Effective start date</th>
+                    <th style="width:18%">Effective end date</th>
+                    <th>&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody id="accountRateTableBody"></tbody>
+        </table>
+
+    </div>
+</div>
+
+
+<!-- context menu definition start : to be used by the JavaScript logic to build context menu for each row.-->
+<ul id="context-menu" class="dropdown-menu" style="font-size:14pt;">
+    <li data-item="update_rate"><a>Update rate</a></li>
+</ul>
+<!-- context menu definition end -->
+@section Scripts{
+    <script>
+        window.customerAccountId = getIdFromAddressBar();
+       
+        //The following JavaScript function is reused often
+        //to collect id value from the address bar for global scope variable
+        //such as window.studentId, window.companyId,window.courseId etc
+        function getIdFromAddressBar() {
+            var urlArray = window.location.href.split('/');
+            var id = urlArray[urlArray.length - 1];
+            return id;
+        };
+        $('#addNewRateLink').attr('href', '/CustomerAccounts/CreateAccountRate/' + window.customerAccountId);
+            $(document).ready(function () {
+                loadAccountRateData();
+
+            })
+        function loadAccountRateData() {
+                //Note: jQuery.ajax(..) is also often written is $.ajax(..)
+                $loadDataHandler = jQuery.ajax({
+                    url: '/API/CustomerAccounts/GetAccountRates/' + window.customerAccountId,
+                    method: 'GET',
+                    dataType: 'json',
+                    cache: false,
+                });
+                $loadDataHandler.done(function (data, textStatus, jqXHR) {
+                    var jsonCustomerAccountData = { accountName: data.account.accountName, customerAccountId: data.account.customerAccountId };
+                    $('#accountNameTextBlock').text(data.account.accountName);
+                    Cookies.set("customer_account", jsonCustomerAccountData, { path: "/" });
+                    var accountRateList = data.accountRateList;
+                    var accountRateId = '';
+                    var effectiveStartDate = '';
+                    var effectiveEndDate = '';
+                    var ratePerHour = '';
+                    var $tableElement = null;
+                    var $cellElement = null;
+                    var $rowElement = null;
+                    //-------- Find the table element -----------
+                    //I am using the $tableElement variable
+                    //to represent the found HTML element which has a matching id of accountRateTableBody
+                    $tableBodyElement = $('#accountRateTableBody');
+
+                    //I want to build rows and cells (using tr and td HTML elements) so that
+                    //I can display account name, effective start date / end date, rate per hour, comments information
+                    //within the HTML table element, accountRateTableBody. Recall that, I have already asked the
+                    //$tableBodyElement variable to represent (reference) the table element.
+
+                    //-------- Begin creating <tr> and <td> HTML element ------
+                    for (index = 0; index < accountRateList.length; index++) {
+
+                        var oneAccountRate = accountRateList[index];
+                        //Copy out the customer account information
+                        ratePerHour = oneAccountRate.ratePerHour;
+                        accountRateId = oneAccountRate.accountRateId;
+                        effectiveStartDate = moment(new Date(oneAccountRate.effectiveStartDate)).format("DD/MM/YYYY");
+                        if ((new Date(oneAccountRate.effectiveEndDate)).getTime() == 0) {
+                            effectiveEndDate = 'NA';
+                        } else {
+                            effectiveEndDate = moment(new Date(oneAccountRate.effectiveEndDate)).format("DD/MM/YYYY");
+                        }
+                        //Create new HTML <tr> element.
+                        //At the same time let the $rowElement variable to represent it.
+                        $rowElement = $('<tr></tr>');
+                        $cellElement = $('<td></td>', { text: accountRateId });
+                        $rowElement.append($cellElement);
+
+                        //--------------- Add the a new cell element into the row represented by the $rowElement
+                        //Notice that, this is calling a generateContextMenuButton method which will return a new cell element
+                        $rowElement.append(generateContextMenuButton());
+
+                        //Create the cell element which display rate per hour information
+                        $cellElement = $('<td></td>', { text: ratePerHour });
+                        $cellElement.attr('data-title', 'Rate / Hour');
+                        $rowElement.append($cellElement);
+
+                        //Create the cell element which display effective start date info
+                        $cellElement = $('<td></td>', { text: effectiveStartDate });
+                        $cellElement.attr('data-title', 'Effective start date');
+                        $rowElement.append($cellElement);
+                        //Create the cell element which display effective end date info
+                        $cellElement = $('<td></td>', { text: effectiveEndDate });
+                        $cellElement.attr('data-title', 'Effective end date');
+                        $rowElement.append($cellElement);
+
+
+                        //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                        $hyperLinkElement = $('<a>Update</a>').attr('href', '/CustomerAccounts/UpdateAccountRate/' + accountRateId);
+                        $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                        $cellElement = $('<td></td>');
+                        $cellElement.append($hyperLinkElement);
+                        //After letting the cell element containing the hyperlink element
+                        //---------------Add the the new cell element into the row represented by the $rowElement
+                        $rowElement.append($cellElement);
+
+   
+                        //Insert the $rowElement into the table element represented by $tableElement.
+                        $tableBodyElement.append($rowElement);
+                        //----End of creating one row to display one customer account by using <tr> and <td> HTML element ---
+                        // Proceed to the next customerAccount object in the customerAccountList Array.
+                    }//end of for loop.
+
+                    prepareContextMenu();
+                    $('#accountRateTable td:nth-child(1)').hide();//Hiding first column which display record id numbers
+                    $('#accountRateTable th:nth-child(1)').hide();//Hiding first column which display record id numbers
+                }//end of JavaScript anonymous function
+                )//end of the done() method;
+                $loadDataHandler.fail(function (data, textStatus, jqXHR) {
+                    new Noty({
+                        text: 'Ajax call has failed due to : ' + data.statusText, type: 'error',
+                        layout: 'center',
+                        type: 'error',
+                        closeWith: ['click', 'button']
+                    }).show();//end of noty()
+                })//end of $loadDataHandler.fail()
+            }//end of loadAccountRateData();
+
+            function generateContextMenuButton() {
+                var $cellElement = $('<td></td>');
+                var $divContainer = $('<div class="btn-group btn-group-xs"></div>');
+                var $buttonElement = $('<button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>');
+                $buttonElement.addClass('row-action-button');
+                var $buttonDetailElements = $('<span  class="caret"></span>').append($('<span class="sr-only">Toggle Dropdown</span>'));
+                $cellElement.append($divContainer.append($buttonElement.append($buttonDetailElements)));
+                /* I have referenced the author's HTML sample at http://www.prograhammer.com/demos/bootstrap-table-contextmenu/
+                < td >
+                    <div class='btn-group btn-group-xs'>
+                        <button type='button' class='btn btn-default dropdown-toggle row-action-button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+                            <span class='caret'></span>
+                            <span class='sr-only'>Toggle Dropdown</span>
+                        </button>
+                    </div>
+                </td>
+          */
+                $cellElement.attr('data-title', 'Actions'); //For responsive display purpose
+                return $cellElement;
+            }
+
+            //Reference: https://github.com/prograhammer/bootstrap-table-contextmenu
+            //For building responsive context menu. There are too many buttons taking up the widht
+            //of the table display.
+            function prepareContextMenu(){
+
+                $('#accountRateTable').bootstrapTable({
+                    rowStyle: 'rowStyle',
+                    contextMenu: '#context-menu',
+                    contextMenuButton: '.row-action-button',
+                    contextMenuAutoClickRow: true,
+                    onClickRow: function (row, $el) {
+                        $('#customerAccountTable').find('.success').removeClass('success');
+                        $el.addClass('success');
+                    },
+                    onContextMenuItem: function (row, $el) {
+                        if ($el.data('item') == 'update_rate') {
+                            window.location = '/CustomerAccounts/UpdateAccountRate/' + row.recordId;
+                        }
+                     }
+                });
+            }//end of function prepareContextMenu
+    </script>
+}

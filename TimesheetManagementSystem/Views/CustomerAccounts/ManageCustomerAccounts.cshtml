@@ -1,0 +1,505 @@
+﻿<style>
+    /* http://collaboradev.com/2015/03/28/responsive-css-truncate-and-ellipsis/ */
+    .truncate-ellipsis {
+        display: table;
+        table-layout: fixed;
+        width: 100%;
+        white-space: nowrap;
+    }
+
+        .truncate-ellipsis > * {
+            display: table-cell;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel  panel-primary">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    <h3>Manage Customer Accounts</h3>
+
+                    <p>&nbsp;</p>
+
+                </div><!-- end of div with class="panel-title" without this one cannot arange the buttons-->
+            </div>
+        </div><!-- ending the div panel here -->
+    </div>
+</div>
+<div class="row">
+    <span style="float:right;margin-bottom:15px;">
+        <a href="/CustomerAccounts/CreateCustomerAccount" class="btn btn-primary btn-lg">Add Customer Account</a>
+    </span>
+    <div id="no-more-tables">
+        <table id="customerAccountTable" class="col-md-12 table-bordered table-striped table-condensed cf table-responsive ">
+            <thead class="cf">
+                <tr>
+                    <th data-field="recordId">#</th>
+                    <th>Actions</th>
+                    <th style="width:10%" data-field="accountName">Account Name</th>
+                    <th style="width:10%">Current Rate ($)</th>
+                    <th style="width:10%"># of Instructors</th>
+                    <th style="width:18%">Comments</th>
+                    <th>Updated By</th>
+                    <th>Updated At</th>
+                    <th>&nbsp;</th>
+                    <th>&nbsp;</th>
+                    <th>&nbsp;</th>
+                    <th>&nbsp;</th>
+                    <th>&nbsp;</th>
+                    <th>&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody id="customerAccountTableBody"></tbody>
+        </table>
+
+    </div>
+</div>
+
+
+<!-- context menu definition start : to be used by the JavaScript logic to build context menu for each row.-->
+<ul id="context-menu" class="dropdown-menu" style="font-size:14pt;">
+    <li data-item="update_general_information"><a>Update general information</a></li>
+    <li data-item="manage_rate_per_hour"><a>Manage rate per hour</a></li>
+    <li data-item="create_account_detail"><a>Create account detail</a></li>
+    <li data-item="manage_account_details"><a>Manage account details</a></li>
+    <li data-item="assign_instructor"><a>Assign instructor</a></li>
+    <li data-item="manage_instructor_account"><a>Manage instructor account</a></li>
+
+</ul>
+<!-- context menu definition end -->
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            loadCustomerAccountData();
+
+        })
+        function loadCustomerAccountData() {
+            //Note: jQuery.ajax(..) is also often written is $.ajax(..)
+            $loadCustomerAccountDataHandler = jQuery.ajax({
+                url: '/API/CustomerAccounts/GetCustomerAccountsWithAccountRate',
+                method: 'GET',
+                dataType: 'json',
+                cache: false,
+            });
+            $loadCustomerAccountDataHandler.done(function (data, textStatus, jqXHR) {
+                //This done method will
+                //The (data) input parameter automatically captures the response from the
+                //Get() API method
+
+                //I usually use the following code
+                //to inspect the returned result captured by the data input parameter
+                //from the web server.
+                console.log(data);
+
+                //After inspecting the data object with the console.log
+                //I have clear picture of the structure and used
+                //the following variable to represent the response.d
+                var accountList = data;
+                var accountRate;
+                var customerAccount;
+                var customerAccountId = '';
+                var accountName = '';
+                var ratePerHour = '';
+                //var effectiveStartDate = '';
+                //var effectiveEndDate = '';
+                var updatedAt = '';
+                var updatedBy = '';
+                var comments = '';
+                var numOfInstructorsInvolved = '';
+                console.dir("aaa");
+
+                var $tableElement = null;
+                var $cellElement = null;
+                var $rowElement = null;
+                //-------- Find the table element -----------
+                //I am using the $tableElement variable
+                //to represent the found HTML element which has a matching id of customerAccountTableBody
+                $tableBodyElement = $('#customerAccountTableBody');
+                console.dir("bbb");
+                //console.dir(accountList);
+
+                //I want to build rows and cells (using tr and td HTML elements) so that
+                //I can display account name, effective start date / end date, rate per hour, comments information
+                //within the HTML table element, customerAccountTableBody. Recall that, I have already asked the
+                //$tableBodyElement variable to represent (reference) the table element.
+
+                //-------- Begin creating <tr> and <td> HTML element ------
+
+                for (index = 0; index < accountList.length; index++) {
+
+                    customerAccount = accountList[index];
+                    //Copy out the accout detail information
+                    customerAccountId = customerAccount.customerAccountId;
+                    accountName = customerAccount.accountName;
+                    ratePerHour = customerAccount.ratePerHour;
+                    comments = customerAccount.comments;
+                    numOfInstructorsInvolved = customerAccount.numOfInstructorsInvolved;
+                    updatedBy = customerAccount.updatedBy;
+                    updatedAt = moment(new Date(customerAccount.updatedAt)).format("DD/MM/YYYY");
+
+                    //effectiveStartDate = moment(new Date(accountDetail.effectiveStartDate)).format("DD/MM/YYYY");
+                    //effectiveEndDate = (accountDetail.effectiveEndDate != null) ?
+                    //    moment(new Date(accountDetail.effectiveEndDate)).format("DD/MM/YYYY")
+                    //    : 'NA';
+                    //isVisible = accountDetail.isVisible;
+
+                    //Create new HTML <tr> element.
+                    //At the same time let the $rowElement variable to represent it.
+                    $rowElement = $('<tr></tr>');
+                    $cellElement = $('<td></td>', { text: customerAccountId }); //This cell will be hidden by other JavaScript logic here.
+                    $rowElement.append($cellElement);
+
+                    //--------------- Add the a new cell element into the row represented by the $rowElement
+                    //Notice that, this is calling a generateContextMenuButton method which will return a new cell element
+                    $rowElement.append(generateContextMenuButton());
+
+                    //Create the cell element which display week day name
+                    $cellElement = $('<td></td>', { text: accountName });
+                    $cellElement.attr('data-title', 'Account Name');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display start time
+                    $cellElement = $('<td></td>', { text: ratePerHour });
+                    $cellElement.attr('data-title', 'Rate Per Hour');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display end time
+                    $cellElement = $('<td></td>', { text: numOfInstructorsInvolved });
+                    $cellElement.attr('data-title', '# of Instructors');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display effective start date
+                    $cellElement = $('<td></td>', { text: comments });
+                    $cellElement.attr('data-title', 'Comments');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display effective end date
+                    $cellElement = $('<td></td>', { text: updatedBy });
+                    $cellElement.attr('data-title', 'Updated By');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display effective end date
+                    $cellElement = $('<td></td>', { text: updatedAt });
+                    $cellElement.attr('data-title', 'Updated At');
+                    $rowElement.append($cellElement);
+                    //Create the cell element which display visibility status indicator
+                    //$cellElement = $('<td></td>');
+                    //$spanElement = $('<span></span>');
+                    //$spanElement.addClass(isVisible ? 'glyphicon glyphicon-ok' : 'glyphicon glyphicon-remove');
+                    //$cellElement.append($spanElement);
+                    //$cellElement.attr('data-title', 'Visibility');
+                    //$rowElement.append($cellElement);
+
+                    ////---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                    //$hyperLinkElement = $('<a>Update</a>').attr('href', '/AccountDetails/UpdateOneAccountDetailForCustomerAccount/' + accountDetailId);
+                    //$hyperLinkElement.addClass('btn btn-primary btn-lg');
+                    //$cellElement = $('<td></td>');
+                    //$cellElement.append($hyperLinkElement);
+                    ////After letting the cell element containing the hyperlink element
+                    ////---------------Add the the new cell element into the row represented by the $rowElement
+                    //$rowElement.append($cellElement);
+
+                        //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                    $hyperLinkElement = $('<a>Update General Info</a>').attr('href', '/CustomerAccounts/UpdateCustomerAccount/' + customerAccountId);
+                    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                    $cellElement = $('<td></td>');
+                    $cellElement.append($hyperLinkElement);
+                    //After letting the cell element containing the hyperlink element
+                    //---------------Add the the new cell element into the row represented by the $rowElement
+                    $rowElement.append($cellElement);
+
+                    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                    $hyperLinkElement = $('<a>Manage rate/hour</a>').attr('href', '/CustomerAccounts/ManageAccountRates/' + customerAccountId);
+                    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                    $cellElement = $('<td></td>');
+                    $cellElement.append($hyperLinkElement);
+                    //After letting the cell element containing the hyperlink element
+                    //---------------Add the the new cell element into the row represented by the $rowElement
+                    $rowElement.append($cellElement);
+
+                    console.dir("bbbcbbcbcbcc");
+
+
+                    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                    $hyperLinkElement = $('<a>Add account detail</a>').attr('href', '/AccountDetails/CreateOneAccountDetailForCustomerAccount/' + customerAccountId);
+                    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                    $cellElement = $('<td></td>');
+                    $cellElement.append($hyperLinkElement);
+                    //After letting the cell element containing the hyperlink element
+                    //---------------Add the the new cell element into the row represented by the $rowElement
+                    $rowElement.append($cellElement);
+
+                    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                    $hyperLinkElement = $('<a>Manage account details</a>').attr('href', '/AccountDetails/ManageAccountDetailsForOneCustomerAccount/' + customerAccountId);
+                    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                    $cellElement = $('<td></td>');
+                    $cellElement.append($hyperLinkElement);
+                    //After letting the cell element containing the hyperlink element
+                    //---------------Add the the new cell element into the row represented by the $rowElement
+                    $rowElement.append($cellElement);
+
+                    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                    $hyperLinkElement = $('<a>Assign instructor</a>').attr('href', '/InstructorAccounts/AssignInstructor/' + customerAccountId);
+                    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                    $cellElement = $('<td></td>');
+                    $cellElement.append($hyperLinkElement);
+                    //After letting the cell element containing the hyperlink element
+                    //---------------Add the the new cell element into the row represented by the $rowElement
+                    $rowElement.append($cellElement);
+
+                    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                    $hyperLinkElement = $('<a>Manage Instructor Accounts</a>').attr('href', '/InstructorAccounts/ManageInstructorAccount/' + customerAccountId);
+                    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                    $cellElement = $('<td></td>');
+                    $cellElement.append($hyperLinkElement);
+                    //After letting the cell element containing the hyperlink element
+                    //---------------Add the the new cell element into the row represented by the $rowElement
+                    $rowElement.append($cellElement);
+
+
+
+
+
+                    //Insert the $rowElement into the table element represented by $tableBodyElement.
+                    $tableBodyElement.append($rowElement);
+                    //----End of creating one row to display one account detail by using <tr> and <td> HTML element ---
+                    // Proceed to the next accountDetail object in the accountDetailList Array.
+                }//end of for loop.
+
+               
+
+                prepareContextMenu();
+                $('#customerAccountTable td:nth-child(1)').hide();//Hiding first column which display record id numbers
+                $('#customerAccountTable th:nth-child(1)').hide();//Hiding first column which display record id numbers
+            }//end of JavaScript anonymous function
+            )//end of the done() method;
+
+
+            $loadCustomerAccountDataHandler.fail(function (data, textStatus, jqXHR) {
+                new Noty({
+                    text: 'Ajax call has failed due to : ' + data.statusText, type: 'error',
+                    layout: 'center',
+                    type: 'error',
+                    closeWith: ['click', 'button']
+                }).show();//end of noty()
+            })//end of $loadCustomerAccountDataHandler.fail()
+        }//end of loadCustomerAccountData();
+
+        function generateContextMenuButton() {
+            var $cellElement = $('<td></td>');
+            var $divContainer = $('<div class="btn-group btn-group-xs"></div>');
+            var $buttonElement = $('<button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>');
+            $buttonElement.addClass('row-action-button');
+            var $buttonDetailElements = $('<span  class="caret"></span>').append($('<span class="sr-only">Toggle Dropdown</span>'));
+            $cellElement.append($divContainer.append($buttonElement.append($buttonDetailElements)));
+            /* I have referenced the author's HTML sample at http://www.prograhammer.com/demos/bootstrap-table-contextmenu/
+            < td >
+                <div class='btn-group btn-group-xs'>
+                    <button type='button' class='btn btn-default dropdown-toggle row-action-button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+                        <span class='caret'></span>
+                        <span class='sr-only'>Toggle Dropdown</span>
+                    </button>
+                </div>
+            </td>
+      */
+            $cellElement.attr('data-title', 'Actions'); //For responsive display purpose
+            return $cellElement;
+        }
+
+        //Reference: https://github.com/prograhammer/bootstrap-table-contextmenu
+        //For building responsive context menu. There are too many buttons taking up the widht
+        //of the table display.
+        function prepareContextMenu() {
+
+            $('#customerAccountTable').bootstrapTable({
+                rowStyle: 'rowStyle',
+                contextMenu: '#context-menu',
+                contextMenuButton: '.row-action-button',
+                contextMenuAutoClickRow: true,
+                onClickRow: function (row, $el) {
+                    var jsonData = { accountName: row.accountName };
+                    Cookies.set("customer_account", jsonData, { path: "/" });
+                    $('#customerAccountTable').find('.success').removeClass('success');
+                    $el.addClass('success');
+                },
+                onContextMenuItem: function (row, $el) {
+                    if ($el.data('item') == 'update_general_information') {
+                        //alert('update customer account record id : ' + row.recordId);
+                        window.location = '/CustomerAccounts/UpdateCustomerAccount/' + row.recordId;
+                    }
+                    else if ($el.data('item') == 'manage_rate_per_hour') {
+                        //alert('create one new account detail as child record of ' + row.recordId);
+                        var jsonData = { accountName: row.accountName };
+                        Cookies.set("customer_account", jsonData, { path: "/" });
+                        window.location = '/CustomerAccounts/ManageAccountRates/' + row.recordId;
+                    }
+                    else if ($el.data('item') == 'create_account_detail') {
+                        //alert('create one new account detail as child record of ' + row.recordId);
+                        var jsonData = { accountName: row.accountName };
+                        Cookies.set("customer_account", jsonData, { path: "/" });
+                        window.location = '/AccountDetails/CreateOneAccountDetailForCustomerAccount/' + row.recordId;
+                    }
+                    else if ($el.data('item') == 'manage_account_details') {
+                        //alert('navigate to another view interface which shows \n all the account details tied to this account ' + row.recordId);
+                        var jsonData = { accountName: row.accountName };
+                        Cookies.set("customer_account", jsonData, { path: "/" });
+                        window.location = '/AccountDetails/ManageAccountDetailsForOneCustomerAccount/' + row.recordId;
+                    }
+                    else if ($el.data('item') == 'assign_instructor') {
+                        //alert('navigate to view interface which let user search and choose instructor for this account ' + row.recordId);
+                        var jsonData = { accountName: row.accountName };
+                        Cookies.set("customer_account", jsonData, { path: "/" });
+                        window.location = '/InstructorAccounts/AssignInstructor/' + row.recordId;
+
+                    }
+                    else if ($el.data('item') == 'manage_instructor_account') {
+                        //alert('navigate to view interface which let user view instructors tied to this account ' + row.recordId);
+                        var jsonData = { accountName: row.accountName };
+                        Cookies.set("customer_account", jsonData, { path: "/" });
+                        window.location = '/InstructorAccounts/ManageInstructorAccount/' + row.recordId;
+
+                    }
+                }
+            });
+        }//end of function prepareContextMenu
+
+
+         //for (index = 0; index < accountList.length; index++) {
+
+                //    console.dir("a");
+
+                //    customerAccount = accountList[index];
+                //    //Copy out the customer account information
+                //    customerAccountId = customerAccount.customerAccountId;
+                //    accountName = customerAccount.accountName;
+
+                //    ratePerHour = customerAccount.ratePerHour;
+                //    /*
+                //    effectiveStartDate = moment(new Date(customerAccount.effectiveStartDate)).format("DD/MM/YYYY");
+                //    if ((new Date(customerAccount.effectiveEndDate)).getTime() == 0) {
+                //        effectiveEndDate = 'NA';
+                //    } else {
+                //        effectiveEndDate = moment(new Date(customerAccount.effectiveEndDate)).format("DD/MM/YYYY");
+                //    }
+                //    */
+                //    numOfInstructorsInvolved = customerAccount.numOfInstructorsInvolved;
+                //    updatedBy = customerAccount.updatedBy;
+                //    updatedAt = moment(new Date(customerAccount.updatedAt)).format("DD/MM/YYYY");;
+                //    comments = customerAccount.comments;
+                //    //Create new HTML <tr> element.
+                //    //At the same time let the $rowElement variable to represent it.
+                //    $rowElement = $('<tr></tr>');
+                //    $cellElement = $('<td></td>', { text: customerAccountId });
+                //    $rowElement.append($cellElement);
+
+                //    //--------------- Add the a new cell element into the row represented by the $rowElement
+                //    //Notice that, this is calling a generateContextMenuButton method which will return a new cell element
+                //    $rowElement.append(generateContextMenuButton());
+
+                //    //Create the cell element which display Account Name.
+                //    $cellElement = $('<td></td>', { text: accountName });
+                //    $cellElement.attr('data-title', 'Account name');
+                //    $rowElement.append($cellElement);
+
+                //    console.dir("b");
+
+                //    //Create the cell element which display num of rates data
+                //    $cellElement = $('<td></td>', { text: ratePerHour });
+                //    $cellElement.attr('data-title', 'Current Rate');
+                //    $rowElement.append($cellElement);
+                //    //Create the cell element which display num of instructors
+                //    $cellElement = $('<td></td>', { text: numOfInstructorsInvolved });
+                //    $cellElement.attr('data-title', 'Num of instructors');
+                //    $rowElement.append($cellElement);
+                //    //Create the cell element which display comments
+                //    $cellElement = $('<td></td>')
+                //        .append($('<div class="truncate-ellipsis"></div>')
+                //            .append($('<span></span>', { text: comments })));
+                //    $cellElement.attr('data-title', 'Comments');
+                //    $rowElement.append($cellElement);
+                //    //Create the cell element which display updated by
+                //    $cellElement = $('<td></td>', { text: updatedBy });
+                //    $cellElement.attr('data-title', 'Updated by');
+                //    $rowElement.append($cellElement);
+                //    //Create the cell element which display updated at
+                //    $cellElement = $('<td></td>', { text: updatedAt });
+                //    $cellElement.attr('data-title', 'Updated at');
+                //    $rowElement.append($cellElement);
+
+
+                //    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                //    $hyperLinkElement = $('<a>Update General Info</a>').attr('href', '/CustomerAccounts/UpdateCustomerAccount/' + customerAccountId);
+                //    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                //    $cellElement = $('<td></td>');
+                //    $cellElement.append($hyperLinkElement);
+                //    //After letting the cell element containing the hyperlink element
+                //    //---------------Add the the new cell element into the row represented by the $rowElement
+                //    $rowElement.append($cellElement);
+
+                //    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                //    $hyperLinkElement = $('<a>Manage rate/hour</a>').attr('href', '/CustomerAccounts/ManageAccountRates/' + customerAccountId);
+                //    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                //    $cellElement = $('<td></td>');
+                //    $cellElement.append($hyperLinkElement);
+                //    //After letting the cell element containing the hyperlink element
+                //    //---------------Add the the new cell element into the row represented by the $rowElement
+                //    $rowElement.append($cellElement);
+
+                //    console.dir("bbbcbbcbcbcc");
+
+
+                //    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                //    $hyperLinkElement = $('<a>Add account detail</a>').attr('href', '/AccountDetails/CreateOneAccountDetailForCustomerAccount/' + customerAccountId);
+                //    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                //    $cellElement = $('<td></td>');
+                //    $cellElement.append($hyperLinkElement);
+                //    //After letting the cell element containing the hyperlink element
+                //    //---------------Add the the new cell element into the row represented by the $rowElement
+                //    $rowElement.append($cellElement);
+
+                //    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                //    $hyperLinkElement = $('<a>Manage account details</a>').attr('href', '/AccountDetails/ManageAccountDetailsForOneCustomerAccount/' + customerAccountId);
+                //    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                //    $cellElement = $('<td></td>');
+                //    $cellElement.append($hyperLinkElement);
+                //    //After letting the cell element containing the hyperlink element
+                //    //---------------Add the the new cell element into the row represented by the $rowElement
+                //    $rowElement.append($cellElement);
+
+                //    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                //    $hyperLinkElement = $('<a>Assign instructor</a>').attr('href', '/InstructorAccounts/AssignInstructor/' + customerAccountId);
+                //    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                //    $cellElement = $('<td></td>');
+                //    $cellElement.append($hyperLinkElement);
+                //    //After letting the cell element containing the hyperlink element
+                //    //---------------Add the the new cell element into the row represented by the $rowElement
+                //    $rowElement.append($cellElement);
+
+                //    //---------------- Using jQuery() to create the hyperlink element using the <a></a> --------
+                //    $hyperLinkElement = $('<a>Manage Instructor Accounts</a>').attr('href', '/InstructorAccounts/ManageInstructorAccount/' + customerAccountId);
+                //    $hyperLinkElement.addClass('btn btn-primary btn-lg');
+                //    $cellElement = $('<td></td>');
+                //    $cellElement.append($hyperLinkElement);
+                //    //After letting the cell element containing the hyperlink element
+                //    //---------------Add the the new cell element into the row represented by the $rowElement
+                //    $rowElement.append($cellElement);
+
+                //    //Insert the $rowElement into the table element represented by $tableElement.
+                //    $tableBodyElement.append($rowElement);
+                //    //----End of creating one row to display one customer account by using <tr> and <td> HTML element ---
+                //    // Proceed to the next customerAccount object in the customerAccountList Array.
+
+
+                //}//end of for loop.
+
+
+
+
+
+    </script>
+}
+
+
+
+
+
+
+
+

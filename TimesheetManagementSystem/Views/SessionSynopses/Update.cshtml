@@ -1,0 +1,171 @@
+﻿<div class="container">
+    <div class="col-md-offset-2 col-md-8">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="panel-title">Update Session Synopsis Record</div>
+            </div>
+            <div class="panel-body">
+                <form id="dataForm" role="form" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="sessionSynopsisNameInput">Session sysnopsis name</label>
+                        <div class="col-md-7 input-group-lg">
+                            <input type="text" name="sessionSynopsisNameInput" id="sessionSynopsisNameInput"
+                                   class="form-control"
+                                   maxlength="100" placeholder="Session synopsis name" value="" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3" for="isVisibleInput">Visibility</label>
+                        <div class="col-md-7">
+                            <div class="make-switch" data-on="primary" data-off="info">
+                                <input type="checkbox" id="isVisibleInput" name="isVisibleInput" checked>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-12">
+                        <label class="control-label col-md-1"></label>
+                        <div class="col-md-10">
+                            <div class="pull-right">
+                                <input type="button" class="btn btn-danger" value="Delete" id="deleteButton" data-toggle="modal" data-target="#confirm-delete"/>
+                                <input type="button" class="btn btn-primary" value="Save" id="saveButton" />
+                                <a class="btn btn-default" asp-action="Index" asp-controler="SessionSynopses">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div><!-- end of div element which has the class="panel-body" -->
+        </div><!-- end of the div element which has the class="panel" -->
+    </div><!-- end of the div element which has class="col-md-offset-2 col-md-8" -->
+</div><!-- end of div element which has the class="container" -->
+<!-- End of main div element to contain all
+        the web form interface elements -->
+
+
+<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+               Delete session synopsis
+            </div>
+            <div class="modal-body">
+                Deleting session synopsis can affect consistency in timesheet generated
+                by instructors this month. Continue the delete action?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <a class="btn btn-danger btn-ok">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <link href="~/lib/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+    <script src="~/lib/bootstrap-switch/dist/js/bootstrap-switch.min.js" type="text/javascript"></script>
+    <script>
+        window.sessionSynopsisId = getIdFromAddressBar();
+        loadOneSessionSynopsisById();
+
+
+
+        function getIdFromAddressBar() {
+            var urlArray = window.location.href.split('/');
+            var id = urlArray[urlArray.length - 1];
+            return id;
+        };
+
+
+
+        $("[id='isVisibleInput']").bootstrapSwitch();
+
+        function WebFormData(inSessionSynopsisId, inSessionSynopsisName, inVisibility) {
+            this.sessionSynopsisId = inSessionSynopsisId;
+            this.sessionSynopsisName = inSessionSynopsisName;
+            this.isVisible = inVisibility;
+        }
+
+        function loadOneSessionSynopsisById() {
+            $requestTracker = jQuery.ajax({
+                type: 'GET',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                },
+                url: '/API/SessionSynopses/GetOneSessionSynopsis/' + window.sessionSynopsisId,
+                dataType: 'json'
+            })
+            $requestTracker.done(function (data, textStatus, jqXHR) {
+                var oneSessionSynopsis = data;
+                $('#sessionSynopsisNameInput').val(oneSessionSynopsis.sessionSynopsisName);
+                $('#isVisibleInput').bootstrapSwitch('state', oneSessionSynopsis.isVisible);
+
+                //Give the button element, deleteButton some data attribute information.
+                $('#deleteButton').data('recordId', data.sessionSynopsisId);
+                $('#deleteButton').data('recordTitle', data.sessionSynopsisName);
+
+
+            });//end of $requestTracker.done()
+            $requestTracker.fail(function (data, textStatus, jqXHR) {
+
+                new Noty({
+                    text: data.responseJSON.message, type: 'error',
+                    layout: 'center',
+                    closeWith: ['click', 'button']
+                }).show();//end of new Noty()
+            });
+        } //end of loadOneSessionSynopsisById
+
+        $('#saveButton').on('click', function () {
+        		var collectedSessionSynopsisName = $('#sessionSynopsisNameInput').val();
+                var collectedVisibility = $('#isVisibleInput').bootstrapSwitch('state');
+        		//Use the object constructor (WebFormData) to construct
+                //an object of information
+                var webFormData = new WebFormData(window.sessionSynopsisId,collectedSessionSynopsisName, collectedVisibility);
+                $requestTracker = jQuery.ajax({
+                    type: 'PUT',
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                    },
+                    url: '/API/SessionSynopses/UpdateSessionSynopsis/' + window.sessionSynopsisId,
+                    dataType: 'json',
+                    data: webFormData,
+                    contentType: 'application/x-www-form-urlencoded',
+                })
+                $requestTracker.done(function (data, textStatus, jqXHR) {
+                    new Noty({ text: data.message, layout: 'center', type: 'success', closeWith: ['click', 'button'] }).show();
+                });//end of $requestTracker.done()
+                $requestTracker.fail(function (data, textStatus, jqXHR) {
+
+                    new Noty({
+                        text: data.responseJSON.message, type: 'error',
+                        layout: 'center',
+                        closeWith: ['click', 'button']
+                    }).show();//end of new Noty()
+                });//end of $requestTracker.fail()
+        });//end of $('#saveButton').on('click', anonymous function)
+
+
+        $('#confirm-delete').on('click', '.btn-ok', function (e) {
+             //http://stackoverflow.com/questions/8982295/confirm-delete-modal-dialog-with-twitter-bootstrap
+            var $modalDiv = $(e.delegateTarget);
+            var id = $(this).data('recordId');
+            $deleteHandler = $.ajax({url: '/api/SessionSynopses/' + id, type: 'DELETE'})
+            // $.post('/api/record/' + id).then()
+            $modalDiv.addClass('loading');
+
+            $deleteHandler.done(function () {
+                $modalDiv.modal('hide').removeClass('loading');
+                window.location.replace('/SessionSynopses/Index'); ;
+            })
+            $deleteHandler.fail(function () {
+                $modalDiv.modal('hide').removeClass('loading');
+                new Noty({ text: 'System could not delete the session synopsis.', type: 'info' }).show();
+            })
+
+        });
+        $('#confirm-delete').on('show.bs.modal', function (e) {
+            var data = $(e.relatedTarget).data();
+            $('.title', this).text(data.recordTitle);
+            $('.btn-ok', this).data('recordId', data.recordId);
+        });
+
+    </script>
+}

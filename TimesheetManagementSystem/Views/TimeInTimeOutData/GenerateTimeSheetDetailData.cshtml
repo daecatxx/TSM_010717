@@ -1,0 +1,212 @@
+﻿<div  id="timeSheetManagementPanel">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel  panel-primary">
+                <div class="panel-heading">
+                    <div class="panel-title"><h3>Generate Timesheet for {{timeSheetMonth}} / {{timeSheetYear}}</h3></div>
+                </div>
+            </div><!-- ending the div panel here -->
+        </div>
+    </div>
+  
+    <div v-if="(canGenerateTimeSheetData)" class="row">
+        <div class="col-md-12"><span class="info">{{canGenerateTimeSheetData}} You do not have timesheet data for month {{timeSheetMonth}} / {{timeSheetYear}} 
+             . Please click <button v-bind:class="{ disabled: !(canGenerateTimeSheetData) }" class="btn btn-primary btn-raised"  @@click="generateTimeSheetRecords()">Generate Timesheet</button> to create timesheet data</span></div>
+   </div>
+    <div v-if="(!canGenerateTimeSheetData)" class="row">
+        <div class="col-md-12">
+            <span class="error">
+               You already have timesheet data for month {{timeSheetMonth}} / {{timeSheetYear}}
+                . Please click <a class="btn btn-primary btn-raised" href="/TimeInTimeOutData/ManageTimeInTimeOutData">Manage Timesheet</a> to update your clock-in clock-out
+            </span>
+        </div>
+    </div>
+        <div  v-if="(canGenerateTimeSheetData)" class="row">
+            <span style="float:right;margin-bottom:15px;">
+                <button v-bind:class="{ disabled: !(canGenerateTimeSheetData) }" class="btn btn-primary btn-raised" @@click="generateTimeSheetRecords()">Generate Timesheet</button>
+            </span>
+            <div id="no-more-tables">
+                <table id="timeSheetDetailDataTable"
+                       class="col-md-12 table-bordered table-striped table-condensed cf table-responsive ">
+                    <thead class="cf">
+                        <tr>
+                            <th style="width:5%" data-field="recordId">#</th>
+                            <th style="width:5%"></th>
+                            <th style="width:10%">Account</th>
+                            <th style="width:3%">Day</th>
+                            <th style="width:10%">Start Time</th>
+                            <th style="width:10%">End Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accountDetailDataTableBody">
+                        <tr v-for="accountDetail in accountDetailData">
+                            <td>{{accountDetail.accountDetailId}}</td>
+                            <td>
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" v-bind:value="accountDetail.accountDetailId" checked="" v-model="selectedAccountDetailValues">&nbsp;
+                                    </label>
+                                </div>
+                            </td>
+                            <td>{{accountDetail.accountName}}</td>
+                            <td>{{getWeekDayName(accountDetail.dayOfWeekNumber-1)}}</td>
+                            <td>{{accountDetail.startTimeInHHMM}}</td>
+                            <td>{{accountDetail.endTimeInHHMM}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+
+    </div>
+@section scripts{
+  <!-- Material Design fonts -->
+<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">  
+<link href="~/lib/bootstrap-material-design/dist/css/bootstrap-material-design.css" rel="stylesheet" />
+<link href="~/lib/bootstrap-material-design/dist/css/ripples.css" rel="stylesheet" />
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="~/lib/bootstrap-material-design/dist/js/material.js"></script>
+<script src="~/lib/bootstrap-material-design/dist/js/ripples.js"></script>
+<script>
+    //Reference: http://fezvrasta.github.io/bootstrap-material-design/#getting-started
+    $.material.init(); //Surprisingly, I need to place this command here so that it can work.
+    function getCurrentMonthName(){
+        var monthNameList = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        var currentDate = new Date();
+       
+        return monthNameList[currentDate.getMonth()];
+    }
+
+    $(document).ready(function () {
+
+    });
+
+    var vm = new Vue({
+        el: '#timeSheetManagementPanel',
+        data: {
+            timeSheetMonth: getCurrentMonthName(),
+            timeSheetYear: new Date().getFullYear(),
+            //Used for controlling the Create Timesheet Data button disabled property
+            canGenerateTimeSheetData: false,
+            accountDetailData: null,
+            selectedAccountDetailValues: []
+        },
+        mounted: function () {
+            this.loadAccountDetailData();
+            this.checkCanGenerateTimeSheetRecords();
+        },
+        methods: {
+           
+            getWeekDayName : function(inWeedDayNumber) {
+            var dayNameList = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+                'Saturday'];
+            console.log(dayNameList[inWeedDayNumber]);
+            return dayNameList[inWeedDayNumber];
+            },
+            getTimeFromMins : function (mins) {
+                //https://stackoverflow.com/questions/36035598/how-to-convert-minutes-to-hours-using-moment-js
+                // Do not include the first validation check if you want, for example,
+                // getTimeFromMins(1530) to equal getTimeFromMins(90) (i.e. mins rollover)
+                if (mins >= 24 * 60 || mins < 0) {
+                    throw new RangeError("Valid input should be greater than or equal to 0 and less than 1440.");
+                }
+                var h = mins / 60 | 0,
+                    m = mins % 60 | 0;
+                return moment.utc().hours(h).minutes(m).format("hh:mm A");
+            },
+            loadAccountDetailData: function () {
+                var that = this;
+                $requestTracker = jQuery.ajax({
+                    type: 'GET',
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                    },
+                    url: '/API/AccountDetails/GetCurrentAccountDetailsByInstructorId',
+                    dataType: 'json',
+                    contentType: 'application/x-www-form-urlencoded'
+                });
+                $requestTracker.done(function (data) {
+                    console.dir(data);
+                    console.dir(that.$root._data.accountDetailData);
+                    that.$root._data.accountDetailData = data;
+
+                });
+
+            },
+            checkCanGenerateTimeSheetRecords: function () {
+                var that = this;
+                $requestTracker = jQuery.ajax({
+                    type: 'POST',
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                    },
+                    url: '/API/TimeInTimeOutData/CheckAvailableTimeSheetData',
+                    dataType: 'json',
+                    data: {},
+                    contentType: 'application/x-www-form-urlencoded',
+                })
+                $requestTracker.done(function (data, textStatus, jqXHR) {
+                    that.$root._data.canGenerateTimeSheetData = !(data.message.isTimeSheetDataFound);
+                });//end of $requestTracker.done()
+                $requestTracker.fail(function (data, textStatus, jqXHR) {
+                    new Noty({
+                        text: data.responseJSON.message, type: 'error',
+                        layout: 'center',
+                        closeWith: ['click', 'button']
+                    }).show();//end of new Noty()
+                });//end of $requestTracker.fail()
+            },
+           generateTimeSheetRecords: function () {
+               var that = this;
+               //console.dir({ accountDetailIds: that.$root._data.selectedAccountDetailValues });
+               
+                $requestTracker = jQuery.ajax({
+                    type: 'POST',
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('RequestVerificationToken', $('input[name=__RequestVerificationToken]').val());
+                    },
+                    url: '/API/TimeInTimeOutData/CreateTimeSheetData',
+                    dataType: 'json',
+                    data: { accountDetailIds: that.$root._data.selectedAccountDetailValues },
+                    contentType: 'application/x-www-form-urlencoded',
+                })
+                $requestTracker.done(function (data, textStatus, jqXHR) {
+                    new Noty({
+                        text: data.message, type: 'success',
+                        layout: 'center',
+                        closeWith: ['click', 'button']
+                    }).show();//end of new Noty()
+                    that.$root._data.canGenerateTimeSheetData= false;
+                });//end of $requestTracker.done()
+                $requestTracker.fail(function (data, textStatus, jqXHR) {
+                    new Noty({
+                        text: data.responseJSON.message, type: 'error',
+                        layout: 'center',
+                        closeWith: ['click', 'button']
+                    }).show();//end of new Noty()
+                });//end of $requestTracker.fail()
+              
+            }
+        }
+    });
+      
+
+     
+             //   $('#timeSheetDetailDataTable td:nth-child(1)').hide();//Hiding first column which display record id numbers
+           //     $('#timeSheetDetailDataTable th:nth-child(1)').hide();//Hiding first column which display record id numbers
+
+         
+
+
+
+
+</script>
+}
+
+
