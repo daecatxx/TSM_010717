@@ -152,9 +152,6 @@
                     contentType: 'application/x-www-form-urlencoded',
                 })
                 $saveDataHandler.done(function (data, textStatus, jqXHR) {
-                    console.dir("hello");
-                    
-                    //var backToCustomerAccount
                     new Noty({
                         theme: 'bootstrap-v3',
                         text: data.message,
@@ -163,12 +160,8 @@
                         closeWith: ['click', 'button'],
                         callbacks: {                             
                             onClose: function () {
-                                console.dir("aaa");
                                 redirectPage();
                             },
-                            afterClose: 
-                            
-
                         },
                     }).show();
 

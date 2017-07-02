@@ -109,10 +109,10 @@
     <link href="~/lib/bootstrap-material-design/dist/css/bootstrap-material-design.css" rel="stylesheet" />
     <link href="~/lib/bootstrap-material-design/dist/css/ripples.css" rel="stylesheet" />
     @*<link href="~/lib/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" rel="stylesheet" />*@
-    
+
     @*<link href="~/lib/bootstrap-select/dist/css/bootstrap-select.css" rel="stylesheet" />
-    <script src="~/lib/bootstrap-select/dist/js/bootstrap-select.js"></script>*@
-    
+        <script src="~/lib/bootstrap-select/dist/js/bootstrap-select.js"></script>*@
+
     @*<link rel="stylesheet" type="text/css" href="~/lib/bootstrap-timepicker/css/timepicker.css" />*@
     @*<link href="~/lib/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />*@
     @*<link href="~/lib/bootstrap-multiselect/dist/css/bootstrap-multiselect.css" rel="stylesheet" />*@
@@ -164,6 +164,8 @@
 
                 this.setupCustomerAccountListBox();
                 this.setupSessionSynopsisNamesListBox();
+
+                //this.redirect();
                 $('#dateOfLessonDatePicker').datepicker({ format: 'dd/mm/yyyy' }).on(
                     'changeDate', () => {
 
@@ -179,9 +181,6 @@
                     sessionSynopsisIdArray = selectedItems;
 
                 });
-
-
-
             },
 
             methods: {
@@ -199,7 +198,6 @@
                     $requestTracker.done(function (data) {
                         //console.dir(data);
                         var $accountNameInputElement = $('#accountNameInput');
-                        //.selectpicker();
 
                         var $optionElement = '';
 
@@ -211,7 +209,6 @@
                                 .attr('value', oneCustomerAccount.accountName);
                             $accountNameInputElement.append($optionElement);
 
-                            //console.dir($optionElement)
                             console.dir($accountNameInputElement)
                         }
                     });
@@ -221,7 +218,7 @@
                 createTimeSheetDetail: function () {
                     var that = this;
                     console.log('Save button is clicked');
-                    //console.log("a "+sessionSynopsisIdArray);
+
                     $saveDataHandler = jQuery.ajax({
                         type: 'POST',
                         url: '/API/TimeSheetDetails/CreateTimeSheetDetail',
@@ -244,11 +241,13 @@
                         contentType: 'application/x-www-form-urlencoded',
                     });//end of jQuery.ajax() method call
                     $saveDataHandler.done(function (data, textStatus, jqXHR) {
-
-
                         new Noty({
                             text: data.message, type: 'success', layout: 'center',
-                            
+                            callbacks: {
+                                onClose: function () {
+                                    redirect();
+                                },
+                            },
                         }).show();
                     });//end of saveDataHandler.done(...)
                 },
@@ -285,8 +284,7 @@
                         });
 
                     });
-                }
-
+                },
             }
         });
 
@@ -312,14 +310,11 @@
         });
 
         $("[id='replacementInput']").bootstrapSwitch();
-        //$('#accountNameInput').selectpicker();
-//        $('.selectpicker').selectpicker();
 
-        //$('#accountNameInput').selectpicker();
+        //redirect to ManageTimeInTimeOutData
+        function redirect() {
+            window.location.replace('/TimeInTimeOutData/ManageTimeInTimeOutData');
+        }
 
     </script>
-
-
-
-
 }

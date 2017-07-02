@@ -139,7 +139,12 @@
                         text: data.message,
                         layout: 'top',
                         type: 'success',
-                        closeWith: ['click', 'button']
+                        closeWith: ['click', 'button'],
+                        callbacks: {
+                            onClose: function () {
+                                redirect();
+                            },
+                        },
                     }).show();
                 });//end of $saveDataHandler.done()
                 $saveDataHandler.fail(function (data, textStatus, jqXHR) {
@@ -157,6 +162,10 @@
             }//if the form is valid.
         });//end of $('#saveButton').on('click', anonymous function)
 
+        //redirect to ManageAccountRates
+        function redirect() {
+            window.location.replace('/CustomerAccounts/ManageAccountRates/'+window.customerAccountId);
+        }
 
         //-------------------- setup client-side validation logic --------------------------------
         //http://stackoverflow.com/questions/18754020/bootstrap-3-with-jquery-validation-plugin

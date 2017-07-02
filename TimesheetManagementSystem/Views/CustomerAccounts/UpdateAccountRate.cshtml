@@ -173,7 +173,12 @@
                         text: data.message,
                         layout: 'top',
                         type: 'success',
-                        closeWith: ['click', 'button']
+                        closeWith: ['click', 'button'],
+                        callbacks: {
+                            onClose: function () {
+                                redirect();
+                            },
+                        },  
                     }).show();
                 });//end of $saveDataHandler.done()
                 $saveDataHandler.fail(function (data, textStatus, jqXHR) {
@@ -190,6 +195,10 @@
                 });//end of $saveDataHandler.fail()
             }//if the form is valid.
         });//end of $('#saveButton').on('click', anonymous function)
+
+        function redirect() {
+            window.location.replace('/CustomerAccounts/ManageAccountRates/' + window.customerAccountId);
+        }
 
 
         //-------------------- setup client-side validation logic --------------------------------

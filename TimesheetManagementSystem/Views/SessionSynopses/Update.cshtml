@@ -97,7 +97,7 @@
                 $('#sessionSynopsisNameInput').val(oneSessionSynopsis.sessionSynopsisName);
                 $('#isVisibleInput').bootstrapSwitch('state', oneSessionSynopsis.isVisible);
 
-                //Give the button element, deleteButton some data attribute information.
+               // Give the button element, deleteButton some data attribute information.
                 $('#deleteButton').data('recordId', data.sessionSynopsisId);
                 $('#deleteButton').data('recordTitle', data.sessionSynopsisName);
 
@@ -130,7 +130,14 @@
                     contentType: 'application/x-www-form-urlencoded',
                 })
                 $requestTracker.done(function (data, textStatus, jqXHR) {
-                    new Noty({ text: data.message, layout: 'center', type: 'success', closeWith: ['click', 'button'] }).show();
+                    new Noty({
+                        text: data.message, layout: 'center', type: 'success', closeWith: ['click', 'button'],
+                        callbacks: {
+                            onClose: function () {
+                                redirect();
+                            },
+                        },
+                    }).show();
                 });//end of $requestTracker.done()
                 $requestTracker.fail(function (data, textStatus, jqXHR) {
 
@@ -142,7 +149,9 @@
                 });//end of $requestTracker.fail()
         });//end of $('#saveButton').on('click', anonymous function)
 
-
+function redirect() {
+            window.location.replace('/SessionSynopses/Index');
+        }
         $('#confirm-delete').on('click', '.btn-ok', function (e) {
              //http://stackoverflow.com/questions/8982295/confirm-delete-modal-dialog-with-twitter-bootstrap
             var $modalDiv = $(e.delegateTarget);

@@ -127,7 +127,7 @@
         }//end of loadOneCustomerAccountById
         function CustomerAccount(inCustomerAccountId,inAccountName, inVisibility,inComments) {
             this.customerAccountId = inCustomerAccountId,
-                this.isVisible = inVisibility;
+            this.isVisible = inVisibility;
             this.accountName = inAccountName;
             this.comments = inComments;
         }
@@ -155,7 +155,12 @@
                         text: data.message,
                         layout: 'top',
                         type: 'success',
-                        closeWith: ['click', 'button']
+                        closeWith: ['click', 'button'],
+                        callbacks: {
+                            onClose: function () {
+                                redirectPage();
+                            },
+                        },
                     }).show();
                 });//end of $saveDataHandler.done()
                 $saveDataHandler.fail(function (data, textStatus, jqXHR) {
@@ -172,6 +177,10 @@
                 });//end of $saveDataHandler.fail()
             }//if the form is valid.
         });//end of $('#saveButton').on('click', anonymous function)
+
+        function redirectPage() {
+            window.location.replace('/CustomerAccounts/ManageCustomerAccounts');
+        }
 
 
         //-------------------- setup client-side validation logic --------------------------------

@@ -99,7 +99,14 @@
                         contentType: 'application/x-www-form-urlencoded',
                     });//end of jQuery.ajax() method call
                     $saveDataHandler.done(function (data, textStatus, jqXHR) {
-                        new Noty({ text: data.message, type: 'success', layout: 'center' }).show();
+                        new Noty({
+                            text: data.message, type: 'success', layout: 'center',
+                            callbacks: {
+                                onClose: function() {
+                                    redirect();
+                                },
+                            },
+                        }).show();
                     });//end of saveDataHandler.done(...)
                 },
                 getWeekDayName: function (inWeedDayNumber) {
@@ -161,6 +168,9 @@
             showSeconds: false,
             showMeridian: true
         });
+        function redirect() {
+            window.location.replace('/TimeInTimeOutData/ManageTimeInTimeOutData');
+        }
     </script>
 
 }
