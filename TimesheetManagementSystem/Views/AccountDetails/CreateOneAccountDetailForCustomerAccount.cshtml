@@ -2,6 +2,7 @@
     #checkCurrectAccountDetailButton {
         margin-left: 10px;
     }
+
     tr.new-row {
         background-color: #ffa;
     }
@@ -32,7 +33,7 @@
 
                     </div>
 
-                       
+
 
                     <div class="form-group">
                         <label class="control-label col-md-3" for="startTimeInput">Lesson start time</label>
@@ -48,7 +49,7 @@
                         <div class="col-md-4">
                             <div class="input-group bootstrap-timepicker timepicker">
                                 <input id="endTimeInput" name="endTimeInput" type="text" class="form-control input-lg">
-                                <span class="input-group-addon" ><i class="glyphicon glyphicon-time"></i></span>
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
                             </div>
                         </div>
                     </div>
@@ -86,9 +87,9 @@
                         <label class="control-label col-md-1"></label>
                         <div class="col-md-10">
                             <div class="pull-right">
-                                
+
                                 <input type="button" class="btn btn-primary" value="Save" id="saveButton" />
-                                <a id="goToManageAccountDetailLink"class="btn btn-default" asp-action="ManageAccountDetailsForOneCustomerAccount" asp-controler="AccountDetails">Cancel</a>
+                                <a id="goToManageAccountDetailLink" class="btn btn-default" asp-action="ManageAccountDetailsForOneCustomerAccount" asp-controler="AccountDetails">Cancel</a>
                             </div>
                         </div>
                     </div>
@@ -101,22 +102,22 @@
         the web form interface elements -->
 
 <div id="accountDetailsContentBlock">
-<div id="no-more-tables">
-    <table id="accountDetailTable" 
-           class="col-md-offset-2 col-md-8 table-bordered table-striped table-condensed cf table-responsive ">
-        <thead class="cf">
-            <tr>
-                <th style="width:5%" >Day</th>
-                <th style="width:7%">Start Time</th>
-                <th style="width:7%">End Time</th>
-                <th style="width:10%">Effective Start Date</th>
-                <th style="width:10%">Effective End Date</th>
-                <th style="width:5%">Visible</th>
-            </tr>
-        </thead>
-        <tbody id="accountDetailTableBody"></tbody>
-    </table>
-</div>
+    <div id="no-more-tables">
+        <table id="accountDetailTable"
+               class="col-md-offset-2 col-md-8 table-bordered table-striped table-condensed cf table-responsive ">
+            <thead class="cf">
+                <tr>
+                    <th style="width:5%">Day</th>
+                    <th style="width:7%">Start Time</th>
+                    <th style="width:7%">End Time</th>
+                    <th style="width:10%">Effective Start Date</th>
+                    <th style="width:10%">Effective End Date</th>
+                    <th style="width:5%">Visible</th>
+                </tr>
+            </thead>
+            <tbody id="accountDetailTableBody"></tbody>
+        </table>
+    </div>
 </div>
 
 <div id="conflictContentBlock" style="display:none;">
@@ -138,12 +139,12 @@
     </div>
 </div>
 @section Scripts{
-<link href="~/lib/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" rel="stylesheet" />
-<link rel="stylesheet" type="text/css" href="~/lib/bootstrap-timepicker/css/timepicker.css" />
-<script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
-<script src="~/lib/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
-<link href="~/lib/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
-<script src="~/lib/bootstrap-switch/dist/js/bootstrap-switch.min.js" type="text/javascript"></script>
+    <link href="~/lib/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="~/lib/bootstrap-timepicker/css/timepicker.css" />
+    <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
+    <script src="~/lib/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
+    <link href="~/lib/bootstrap-switch/dist/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet" />
+    <script src="~/lib/bootstrap-switch/dist/js/bootstrap-switch.min.js" type="text/javascript"></script>
     <script>
         window.customerAccountId = getIdFromAddressBar();
         $('#accountNameTextBlock').text(getCustomerAccountNameFromCookie());
@@ -168,26 +169,26 @@
 
         $('#checkCurrectAccountDetailButton').on('click', function () {
             new Noty({
-                theme:'bootstrap-v3',
+                theme: 'bootstrap-v3',
                 text: $('#accountDetailsContentBlock').html(),
                 layout: 'top',
                 type: 'info',
                 closeWith: ['click', 'button']
-                
+
             }).show();//end of Noty()
         });
         //Initialize the bootstrap switch interface
         $("[id='isVisibleInput']").bootstrapSwitch();
-    //Initialize the time picker interface on the 
+        //Initialize the time picker interface on the
         $('#startTimeInput').timepicker();
         $('#endTimeInput').timepicker();
         $('#effectiveStartDateDatePicker')
             .datepicker({
-            format: 'dd/mm/yyyy'
-        })
-        .on('changeDate', function(e) {
-            // Revalidate the date field
-            
+                format: 'dd/mm/yyyy'
+            })
+            .on('changeDate', function (e) {
+                // Revalidate the date field
+
             });
         $('#effectiveEndDateDatePicker')
             .datepicker({
@@ -195,14 +196,14 @@
             })
             .on('changeDate', function (e) {
                 // Revalidate the date field
-               
+
             });
         function dayOfWeekAsString(dayIndex) {
             return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayIndex];
         };
 
         function AccountDetail(inCustomerAccountId, inDayOfWeekNumber, inEffectiveStartDate,
-            inEffectiveEndDate,inStartTime, inEndTime, inVisibility) {
+            inEffectiveEndDate, inStartTime, inEndTime, inVisibility) {
             this.customerAccountId = inCustomerAccountId;
             this.dayOfWeekNumber = inDayOfWeekNumber;
             this.startTime = inStartTime;
@@ -212,41 +213,55 @@
             this.isVisible = inVisibility;
         }
         $('#saveButton').on('click', function () {
-        		var collectedStartTime = $('#startTimeInput').val();
-        		var collectedEndTime = $('#endTimeInput').val();
-                var collectedEffectiveStartDate = $('#effectiveStartDateInput').val();
-        		var collectedEffectiveEndDate = $('#effectiveEndDateInput').val();
-        		var collectedDayOfWeekNumber = $("#dayOfWeekNumberInput").val();
-                var collectedVisibility = $('#isVisibleInput').bootstrapSwitch('state');
-                var accountDetail = new AccountDetail(
-                    window.customerAccountId,
-                    collectedDayOfWeekNumber, collectedEffectiveStartDate,
-                    collectedEffectiveEndDate, collectedStartTime,
-                    collectedEndTime, collectedVisibility);
+            var collectedStartTime = $('#startTimeInput').val();
+            var collectedEndTime = $('#endTimeInput').val();
+            var collectedEffectiveStartDate = $('#effectiveStartDateInput').val();
+            var collectedEffectiveEndDate = $('#effectiveEndDateInput').val();
+            var collectedDayOfWeekNumber = $("#dayOfWeekNumberInput").val();
+            var collectedVisibility = $('#isVisibleInput').bootstrapSwitch('state');
+            var accountDetail = new AccountDetail(
+                window.customerAccountId,
+                collectedDayOfWeekNumber, collectedEffectiveStartDate,
+                collectedEffectiveEndDate, collectedStartTime,
+                collectedEndTime, collectedVisibility);
 
-           $saveDataHandler = jQuery.ajax({
+            $saveDataHandler = jQuery.ajax({
                 type: 'POST',
                 url: '/API/AccountDetails/CreateOneAccountDetail',
                 dataType: 'json',
                 data: accountDetail,
-                contentType: 'application/x-www-form-urlencoded', 
+                contentType: 'application/x-www-form-urlencoded',
             })
-           $saveDataHandler.done(function (data, textStatus, jqXHR) {
-               var conflictingRecords = data.conflictingRecords;
-               if (conflictingRecords.dataListWhichMightConflict.length != 0) {
-                   var resultInHTML = '<div style="margin:0px auto" class="text-center" >' + data.message + '<br>Warning: The data might <b>overlap</b> with ' + createTableView(conflictingRecords.dataListWhichMightConflict) + '</div>' ;
+            $saveDataHandler.done(function (data, textStatus, jqXHR) {
+                var conflictingRecords = data.conflictingRecords;
+                if (conflictingRecords.dataListWhichMightConflict.length != 0) {
+                    var resultInHTML = '<div style="margin:0px auto" class="text-center" >' + data.message + '<br>Warning: The data might <b>overlap</b> with ' + createTableView(conflictingRecords.dataListWhichMightConflict) + '</div>';
 
-                   new Noty({
-                       theme: 'bootstrap-v3',
-                       text: resultInHTML, type: 'success',
-                       layout: 'top',
-                   }).show();//end of new Noty()
-               } else {
-                   new Noty({ theme: 'bootstrap-v3', text: data.message, layout: 'center', type: 'success' }).show();
-               }
-               if (window.$firstRowElement.is(":visible") == true) {
-                   window.$firstRowElement.fadeOut(5000);
-               }
+                    new Noty({
+                        theme: 'bootstrap-v3',
+                        text: resultInHTML, type: 'success',
+                        layout: 'top',
+                        closeWith: ['click', 'button'],
+                        callbacks: {
+                            onClose: function () {
+                                redirect();
+                            },
+                        },
+                    }).show();//end of new Noty()
+                } else {
+                    new Noty({
+                        theme: 'bootstrap-v3', text: data.message, layout: 'center', type: 'success',
+                        closeWith: ['click', 'button'],
+                        callbacks: {
+                            onClose: function () {
+                                redirect();
+                            },
+                        },
+                    }).show();
+                }
+                if (window.$firstRowElement.is(":visible") == true) {
+                    window.$firstRowElement.fadeOut(5000);
+                }
 
                 //-------- Find the table element -----------
                 //I am using the $tableElement variable
@@ -263,7 +278,7 @@
                     moment(new Date(accountDetail.effectiveEndDate)).format("DD/MM/YYYY")
                     : 'NA';
                 isVisible = accountDetail.isVisible;
- 
+
                 $rowElement = $('<tr></tr>'); $rowElement.addClass('new-row');
                 //Create the cell element which display week day name
                 $cellElement = $('<td></td>', { text: dayOfWeekAsString(weekDayIndex - 1) });
@@ -301,7 +316,7 @@
             });//end of $saveDataHandler.done()
             $saveDataHandler.fail(function (data, textStatus, jqXHR) {
                 var infoFromServer = data.responseJSON.message;
-               
+
 
                 new Noty({
                     theme: 'bootstrap-v3',
@@ -347,7 +362,7 @@
                 //I can display week day name, effective start date / end date,  start time, end time etc
                 //within the HTML table element, accountDetailTableBody. Recall that, I have already asked the
                 //$tableBodyElement variable to represent (reference) the table element.
- 
+
                 if (accountDetailList.length == 0) {
                     $tableBodyElement.append(window.$firstRowElement);
                 }
@@ -413,7 +428,7 @@
             })//end of $loadAccountDetailDataHandler.fail()
         }
 
-        
+
 
         function createTableView(inData) {
             //This $divElement will not affect the alignment of the table inside Noty
@@ -443,23 +458,23 @@
                 //Create the cell element which display week day name
                 $cellElement = $('<td></td>', { text: weekDayName });
 
-             
+
                 $rowElement.append($cellElement);
                 //Create the cell element which display start time
                 $cellElement = $('<td></td>', { text: startTimeInHHMM });
-                
+
                 $rowElement.append($cellElement);
                 //Create the cell element which display end time
                 $cellElement = $('<td></td>', { text: endTimeInHHMM });
-              
+
                 $rowElement.append($cellElement);
                 //Create the cell element which display effective start date
                 $cellElement = $('<td></td>', { text: effectiveStartDate });
-              
+
                 $rowElement.append($cellElement);
                 //Create the cell element which display effective end date
                 $cellElement = $('<td></td>', { text: effectiveEndDate });
-             
+
                 $rowElement.append($cellElement);
                 //Create the cell element which display visibility status indicator
                 $cellElement = $('<td></td>');
@@ -473,6 +488,11 @@
                 $tableBodyElement.append($rowElement);
             }
             return $divElement.html();
+        }
+
+
+        function redirect() {
+            window.location.replace('/AccountDetails/ManageAccountDetailsForOneCustomerAccount/' + window.customerAccountId);
         }
 
 

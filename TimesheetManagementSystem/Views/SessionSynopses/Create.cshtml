@@ -64,18 +64,30 @@
                     contentType: 'application/x-www-form-urlencoded',
                 })
                 $requestTracker.done(function (data, textStatus, jqXHR) {
-                    new Noty({ text: data.message, layout: 'center', type: 'success', closeWith: ['click', 'button'] }).show();
+                    new Noty({
+                        text: data.message, layout: 'center', type: 'success', closeWith: ['click', 'button'],
+                        callbacks: {
+                            onClose: function () {
+                                redirect();
+                            },
+                        },
+                    },
+                    ).show();
                 });//end of $requestTracker.done()
                 $requestTracker.fail(function (data, textStatus, jqXHR) {
 
                     new Noty({
                         text: data.responseJSON.message, type: 'error',
                         layout: 'center',
-                        closeWith: ['click', 'button']
+                        closeWith: ['click', 'button'],
+                        
                     }).show();//end of new Noty()
                 });//end of $requestTracker.fail()
         });//end of $('#saveButton').on('click', anonymous function)
 
+        function redirect() {
+            window.location.replace('/SessionSynopses/Index');
+        }
 
 
 

@@ -241,15 +241,6 @@
             });
         }
 
-
-        // $('#navigationBackToManageCustomerAccount').attr('href', '/CustomerAccounts/ManageCustomerAccount');        // !!!!!!!!!!!!!!!!!!!!!!!!! The cancel button
-        //The following JavaScript function is reused often
-        //to collect id value from the address bar for global scope variable
-        //such as window.accountRateId, window.companyId,window.courseId etc
-        //window.instructorAccountId = getIdFromAddressBar();
-
-        console.dir("A");
-
         function InstructorAccount(inInstructorAccountId,
             inCustomerAccountId, inInstructorId, inEffectiveStartDate,
             inEffectiveEndDate, inComments, inWageRate/*, inIsCurrent*/) {
@@ -262,13 +253,12 @@
             this.effectiveEndDate = inEffectiveEndDate;
             this.comments = inComments;
             this.wageRate = inWageRate;
-            //this.isCurrent = inIsCurrent;
+
         }
         console.dir("abc");
 
         $('#saveButton').on('click', function () {
             if ($('#dataForm').valid() == true) {
-                //var collectedCustomerAccountId = $('#inCustomerAccountId').val();
                 var collectedInstructorId = $("instructorIdInput").val();
                 var collectedEffectiveStartDate = $('#effectiveStartDateInput').val();
                 var collectedEffectiveEndDate = $('#effectiveEndDateInput').val();
@@ -303,11 +293,23 @@
                             text: resultInHTML,
                             layout: 'top',
                             type: 'success',
-                            closeWith: ['click', 'button']
+                            closeWith: ['click', 'button'],
+                            callbacks: {
+                                onClose: function () {
+                                    redirect();
+                                },
+                            },
 
                         }).show();
                     } else {
-                        new Noty({ theme: 'bootstrap-v3', text: data.message, layout: 'top', type: 'success' }).show();
+                        new Noty({
+                            theme: 'bootstrap-v3', text: data.message, layout: 'top', type: 'success',
+                            callbacks: {
+                                onClose: function () {
+                                    redirect();
+                                },
+                            },
+                        }).show();
                     }
                 });//end of $saveDataHandler.done()
                 $saveDataHandler.fail(function (data, textStatus, jqXHR) {
@@ -323,51 +325,9 @@
             }
         });//end of $('#saveButton').on('click', anonymous function)
 
-
-
-
-
-        ////Unassign Instructor button
-        //$("#deleteInstructorAssignmentBtn").on('click', function (e) {
-        //    var $modalDiv = $(e.delegateTarget);
-
-        //    $deleteInstructorAccountDataHandler = $.ajax({
-        //        url: '/API/InstructorAccounts/DeleteInstructorAccount/' + window.instructorAccountId,
-        //        method: 'Delete',
-        //        dataType: 'json',
-        //        cache: true,
-        //    })//end of jQuery.ajax() call
-        //    $modalDiv.addClass('loading');
-
-        //    $deleteInstructorAccountDataHandler.done(function (data, textStatus, jqXHR) {
-        //        $modalDiv.modal('hide').removeClass('loading');
-
-        //        new Noty({
-        //            theme: 'bootstrap-v3',
-        //            text: data.message,
-        //            layout: 'top',
-        //            type: 'success',
-        //            closeWith: ['click', 'button']
-        //        }).show();
-
-        //        window.location.replace('/InstructorAccounts/UpdateInstructorAssignment/' + window.instructorAccountId);
-
-        //    });//end of $deleteInstructorAccountDataHandler.done()
-        //    $deleteInstructorAccountDataHandler.fail(function (data, textStatus, jqXHR) {
-        //        var infoFromServer = data.responseJSON.message;
-        //        new Noty({
-        //            theme: 'bootstrap-v3',
-        //            text: infoFromServer, type: 'error',
-        //            layout: 'top',
-        //            onTemplate: function () {
-        //                this.barDom.innerHTML = '<div class="noty_body">' + this.options.text + '</div>';
-        //                // Important: .noty_body class is required for setText API method.
-        //            }
-        //        }).show();//end of new Noty()
-        //    });//end of $saveDataHandler.fail()
-        //})
-
-
+        function redirect() {
+            window.location.replace('/InstructorAccounts/ManageInstructorAccount/' + window.customerAccountId);
+        }
 
         //-------------------- setup client-side validation logic --------------------------------
         //http://stackoverflow.com/questions/18754020/bootstrap-3-with-jquery-validation-plugin

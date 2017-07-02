@@ -9,9 +9,9 @@
                     <div class="form-group">
                         <label class="control-label col-md-3" for="fullNameInput">User Name (Staff Id)</label>
                         <div class="col-md-4">
-                            <input type="text" id="userNameInput" name="userNameInput" 
-														class="form-control input-group-sm"
-                            maxlength="30" placeholder="User name (staff id)" value="" />
+                            <input type="text" id="userNameInput" name="userNameInput"
+                                   class="form-control input-group-sm"
+                                   maxlength="30" placeholder="User name (staff id)" value="" />
                         </div>
                     </div>
                     <div class="form-group">
@@ -31,8 +31,7 @@
                     <div class="form-group">
                         <label class="control-label col-md-3" for="roleIdInput">Role</label>
                         <div class="col-md-9">
-                            <select id="roleIdInput" name="roleIdInput" class="form-control input-group-sm">
-                            </select>
+                            <select id="roleIdInput" name="roleIdInput" class="form-control input-group-sm"></select>
                         </div>
                     </div>
                     <div class="form-group">
@@ -56,98 +55,110 @@
     //I need a document scope variable, g_originalRoleName because
     //there are complications to use the UserManager to remove a role from a user and add a role to a user.
     //The reason is, the method are asynchronous.
-    //A lot of spaggheti coding were involved just to get the RoleName. 
-        g_originalRoleName = '';
-        setupRoleListBox();
+    //A lot of spaggheti coding were involved just to get the RoleName.
+    g_originalRoleName = '';
+    setupRoleListBox();
 
-        function setupRoleListBox() {
-            //Note: jQuery.ajax(..) is also often written is $.ajax(..)
-            $loadHandler = jQuery.ajax({
-                type: 'GET',
-                url: '/API/Roles',
-            })
-            $loadHandler.done(function (data, textStatus, jqXHR) {
-                //The (data) input parameter automatically captures the response from the
-                //Get API method
-                //I usually use the following code
-                //to inspect the returned result captured by the data input parameter
-                //from the web server.
-                console.log(data);
+    function setupRoleListBox() {
+        //Note: jQuery.ajax(..) is also often written is $.ajax(..)
+        $loadHandler = jQuery.ajax({
+            type: 'GET',
+            url: '/API/Roles',
+        })
+        $loadHandler.done(function (data, textStatus, jqXHR) {
+            //The (data) input parameter automatically captures the response from the
+            //Get API method
+            //I usually use the following code
+            //to inspect the returned result captured by the data input parameter
+            //from the web server.
+            console.log(data);
 
-                //After inspecting the data object with the console.log
-                //I have clear picture of the structure and used
-                //the following variable to reference(represent) the data variable.
-                var roleList = data;
+            //After inspecting the data object with the console.log
+            //I have clear picture of the structure and used
+            //the following variable to reference(represent) the data variable.
+            var roleList = data;
 
-                for (index = 0; index < roleList.length; index++) {
-                    role = roleList[index];
-                    roleId = role.roleId;
-                    roleName = role.roleName;
-                    optionElement = $('<option></option', { value: roleId, text: roleName });
-                    g_roleIdInputElement.append(optionElement);
-                }
-                //after setting up the listbox element, call
-                //this method which has another Ajax() call to obtain user details
-                getUserDetails();
-            }//end of JavaScript anonymous function
-            
-   
-            )//end of the done() method;
+            for (index = 0; index < roleList.length; index++) {
+                role = roleList[index];
+                roleId = role.roleId;
+                roleName = role.roleName;
+                optionElement = $('<option></option', { value: roleId, text: roleName });
+                g_roleIdInputElement.append(optionElement);
+            }
+            //after setting up the listbox element, call
+            //this method which has another Ajax() call to obtain user details
+            //getUserDetails();
+        }//end of JavaScript anonymous function
 
-        } //end of setupRoleListBox
+
+        )//end of the done() method;
+
+    } //end of setupRoleListBox
     //Note: jQuery.ajax(..) is also often written is $.ajax(..)
 
-        function WebFormData(inUserName,inFullName, inEmail, inSelectedRoleName,inOriginalRoleName) {
-            this.userName = inUserName;
-            this.fullName = inFullName;
-            this.email = inEmail;
-            this.selectedRoleName = inSelectedRoleName;
-            this.originalRoleName = inOriginalRoleName;
-        }
-        $('#saveButton').on('click', function () {
-            var collectedUserName = $('#userNameInput').val();
-            var collectedFullName = $('#fullNameInput').val();
-            var collectedEmail = $('#emailInput').val();
-          
-            var collectedRoleName = $("#roleIdInput option:selected").text();
-            var webFormData = new WebFormData(collectedUserName,collectedFullName,
-                  collectedEmail,collectedRoleName,g_originalRoleName);
-            var webFormDataInString = JSON.stringify(webFormData);
+    function WebFormData(inUserName, inFullName, inEmail, inSelectedRoleName, inOriginalRoleName) {
+        this.userName = inUserName;
+        this.fullName = inFullName;
+        this.email = inEmail;
+        this.selectedRoleName = inSelectedRoleName;
+        this.originalRoleName = inOriginalRoleName;
+    }
+    $('#saveButton').on('click', function () {
+        var collectedUserName = $('#userNameInput').val();
+        var collectedFullName = $('#fullNameInput').val();
+        var collectedEmail = $('#emailInput').val();
 
-            $addUserHandler = jQuery.ajax({
-                type: 'POST',
-                url: '/API/UserManager',
-                dataType: 'json',
-                contentType: 'application/json;',
-                data: "'" + webFormDataInString + "'"
-            })
-            $addUserHandler.done(function (data, textStatus, jqXHR) {
-                if (data.status == "success") {
-                    new Noty({
-                        text: data.message, type: 'success',
-                        dismissQueue: true,
-                        layout: 'center'
-                    }).show();
-                } else {
-										new Noty({
-												text: data.message, type: 'error',
-												dismissQueue: true,
-												layout: 'center'
-										}).show();
+        var collectedRoleName = $("#roleIdInput option:selected").text();
+        var webFormData = new WebFormData(collectedUserName, collectedFullName,
+            collectedEmail, collectedRoleName, g_originalRoleName);
+        var webFormDataInString = JSON.stringify(webFormData);
 
-                }
-            });
-            $addUserHandler.fail(function (data, textStatus, jqXHR) {
-                console.log('executed when runtime error on server side occurred');
-								new Noty({
-										text: data,
-										type: 'error',
-										dismissQueue: true,
-										layout: 'center'
-								}).show();
-            });
+        $addUserHandler = jQuery.ajax({
+            type: 'POST',
+            url: '/API/UserManager',
+            dataType: 'json',
+            contentType: 'application/json;',
+            data: "'" + webFormDataInString + "'"
+        })
+        $addUserHandler.done(function (data, textStatus, jqXHR) {
+            if (data.status == "success") {
+                new Noty({
+                    text: data.message, type: 'success',
+                    dismissQueue: true,
+                    layout: 'center',
+                    closeWith: ['click', 'button'],
+                    callbacks: {
+                        onClose: function () {
+                            redirect();
+                        },
+                    },
+                }).show();
+            } else {
+                new Noty({
+                    text: data.message, type: 'error',
+                    dismissQueue: true,
+                    layout: 'center'
+                }).show();
 
+            }
         });
+        $addUserHandler.fail(function (data, textStatus, jqXHR) {
+            console.log('executed when runtime error on server side occurred');
+            new Noty({
+                text: data,
+                type: 'error',
+                dismissQueue: true,
+                layout: 'center'
+            }).show();
+        });
+
+    });
+
+    //redirect to UserManager
+    function redirect() {
+        window.location.replace('/UserManager/Index');
+    }
+
 
 </script>
 
